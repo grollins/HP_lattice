@@ -1,4 +1,15 @@
-HP_lattice
-==========
+hplattice
+=========
 
-The Hp Lattice model
+Installation
+------------
+
+    + Install Anaconda
+    
+    + Install Bento
+    
+    + Install hplattice
+
+        bentomaker install
+        ~/anaconda/bin/bentomaker install
+

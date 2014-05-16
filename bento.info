@@ -1,0 +1,11 @@
+Name: hplattice
+Version: 1.0
+Author: Geoff Rollins
+Summary: A toolkit for the two-dimensional HP lattice model of proteins of Chan and Dill
+
+Library:
+    Packages: hplattice
+
+ExtraSourceFiles:
+    LICENSE,
+    README.md
