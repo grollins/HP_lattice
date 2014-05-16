@@ -2,10 +2,8 @@
 #
 # Replica.py    
 
-from Config import *
-import Chain
-import Monty
-from Trajectory import *
+from .Chain import Chain
+from .Monty import Monty
 
 import random
 import string
@@ -23,6 +21,6 @@ class Replica:
 	self.repnum = repnum
 	self.repname = 'rep' + string.zfill(str(repnum),2)
 	self.repdir = config.DATADIR + self.repname
-	self.chain = Chain.Chain(config)
-	self.mc = Monty.Monty(config,temp,self.chain)    
+	self.chain = Chain(config)
+	self.mc = Monty(config,temp,self.chain)    
     

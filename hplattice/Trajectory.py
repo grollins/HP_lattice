@@ -4,11 +4,6 @@
 #
 # NOTES: 9/15/2005 - fixed a bug in rep vs. realrep trajectory writing...
 
-from Config import *
-from Chain import *
-from Monty import *
-from Replica import *
-
 import random
 import string
 import math

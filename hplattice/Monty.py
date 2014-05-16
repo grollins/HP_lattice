@@ -8,11 +8,6 @@
 # NOTES:
 #       Fixed random number generator problem! don't use g.random(), as seed will be the same...        
 
-from Config import *
-from Chain import *
-from Replica import *
-from Trajectory import *
-
 import random
 import string
 import math
