@@ -87,7 +87,7 @@ class Monty:
                 replica.chain.nextvec[vecindex + 1] = tmp1
             else: 
                 ### default: do a rigid rotation
-                for v in range(vecindex,len(replica.chain.nextvec)):
+                for v in range(vecindex, len(replica.chain.nextvec)):
                     replica.chain.nextvec[v] = \
                         (replica.chain.nextvec[v] + direction) % 4
 
@@ -102,13 +102,13 @@ class Monty:
                 replica.chain.nextvec[vecindex + 2] = tmp1
             else: 
                 ### default: do a rigid rotation
-                for v in range(vecindex,len(replica.chain.nextvec)):
+                for v in range(vecindex, len(replica.chain.nextvec)):
                     replica.chain.nextvec[v] = \
                         (replica.chain.nextvec[v] + direction) % 4
 
         else: 
             ### default: do a rigid rotation
-            for v in range(vecindex,len(replica.chain.nextvec)):
+            for v in range(vecindex, len(replica.chain.nextvec)):
                 replica.chain.nextvec[v] = \
                     (replica.chain.nextvec[v] + direction) % 4
 
@@ -161,7 +161,7 @@ class Monty:
             direction = -1
 
         ### a rigid rotation
-        for v in range(vecindex,len(replica.chain.nextvec)):
+        for v in range(vecindex, len(replica.chain.nextvec)):
             replica.chain.nextvec[v] = \
                 (replica.chain.nextvec[v] + direction) % 4
 
@@ -185,9 +185,9 @@ class Monty:
 
         if randnum < boltzfactor:
             # update the chain
-            for i in range(0,len(replica.chain.vec)):
+            for i in range(0, len(replica.chain.vec)):
                 replica.chain.vec[i] = replica.chain.nextvec[i]
-            for i in range(0,len(replica.chain.coords)):
+            for i in range(0, len(replica.chain.coords)):
                 replica.chain.coords[i] = replica.chain.nextcoords[i]
                 replica.chain.viable = replica.chain.nextviable
             # update the lastenergy
@@ -199,8 +199,8 @@ class Monty:
     def energy(self,chain):
         """Calculate potential energy of the chain."""
         num = 0.0
-        for c in range(0,len(chain.coords)-1):
-            for d in range((c+3),len(chain.coords)):
+        for c in range(0, len(chain.coords)-1):
+            for d in range((c+3), len(chain.coords)):
                 if chain.hpstring[c] == 'H':
                     if chain.hpstring[d] == 'H':
                         if (abs(chain.coords[c][0]-chain.coords[d][0]) + abs(chain.coords[c][1]-chain.coords[d][1])) == 1:
@@ -226,7 +226,7 @@ class DistRestraint:
     def D(self, chain):
         """Return the sum of squared-distances over the selected contacts."""
         D = 0.0
-        for i in range(0,len(self.contacts)):
+        for i in range(0, len(self.contacts)):
             c = self.contacts[i][0]
             d = self.contacts[i][1]
             D = D + (chain.coords[c][0]-chain.coords[d][0]) * \

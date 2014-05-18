@@ -52,7 +52,7 @@ class Trajectory:
         self.mkdir(join(config.DATADIR, 'by_replica') )
 
         # Open trajectory files for writing in the worksapce
-        for i in range(0,len(replicas)):
+        for i in range(0, len(replicas)):
             workspacedir = \
                 join(config.DATADIR, 'workspace',
                      str(replicas[i].repnum))
@@ -71,7 +71,7 @@ class Trajectory:
             self.write_eneheader(eneheader, replicas[i])
     
         ### Open trajectory files for writing in the by_temp directory
-        for i in range(0,len(replicas)):
+        for i in range(0, len(replicas)):
             bytempdir = join(config.DATADIR, 'by_temp' )
             self.mkdir(bytempdir)
             
@@ -88,7 +88,7 @@ class Trajectory:
             self.write_eneheader(eneheader,replicas[i])
         
         ### Open trajectory files for writing in the by_replica directory
-        for i in range(0,len(replicas)):
+        for i in range(0, len(replicas)):
             byreplicadir = join(config.DATADIR, 'by_replica')
             self.mkdir(byreplicadir)
             
@@ -145,14 +145,14 @@ class Trajectory:
         if len(self.enequeue[replica.repnum]) == self.BUFFERSIZE:
             self.dump_enequeue(replica)
 
-    def dump_trjqueue(self,replica):
+    def dump_trjqueue(self, replica):
         """Dump the queue to the the respective files and
             clear them for future use."""
         # write coords and enes to the workspace, by_temp and by_replica
         rep = replica.repnum
 
         ### WORKSPACE FILES ###
-        for pt in range(0,len(self.trjqueue[rep])):
+        for pt in range(0, len(self.trjqueue[rep])):
             self.repfiles_trj[rep].write(repr(self.trjqueue[rep][pt]))
             self.repfiles_trj[rep].write('\n')
 
@@ -165,18 +165,18 @@ class Trajectory:
         self.bytemp_replica[rep].write(str(realrep))
         self.bytemp_replica[rep].write('\n')
 
-        for pt in range(0,len(self.trjqueue[realrep])):
+        for pt in range(0, len(self.trjqueue[realrep])):
             self.bytemp_trj[rep].write(repr(self.trjqueue[realrep][pt]))
             self.bytemp_trj[rep].write('\n')
 
-        for pt in range(0,len(self.trjqueue[rep])):
+        for pt in range(0, len(self.trjqueue[rep])):
             self.byreplica_trj[rep].write(repr(self.trjqueue[rep][pt]))
             self.byreplica_trj[rep].write('\n')
 
         ### clear the trj and ene queues
         self.trjqueue[rep] = []
 
-    def dump_enequeue(self,replica):
+    def dump_enequeue(self, replica):
         """Dumps the queued energy values to the respective files and
             clears them for further use."""
 
@@ -184,7 +184,7 @@ class Trajectory:
         rep = replica.repnum
 
         ### WORKSPACE FILES ###
-        for pt in range(0,len(self.enequeue[rep])):
+        for pt in range(0, len(self.enequeue[rep])):
             ## tab-delimit the ene fields
             for field in self.enequeue[rep][pt]:
                 self.repfiles_ene[rep].write(str(field) + '\t')
@@ -193,7 +193,7 @@ class Trajectory:
         ### BY_TEMP and BY_REPLICA FILES ###
         realrep = replica.mc.tempfromrep
 
-        for pt in range(0,len(self.enequeue[rep])):
+        for pt in range(0, len(self.enequeue[rep])):
             ## tab-delimit the ene fields
             for field in self.enequeue[rep][pt]:
                 self.bytemp_ene[realrep].write(str(field) + '\t')
@@ -207,13 +207,13 @@ class Trajectory:
         ### clear the trj and ene queues
         self.enequeue[rep] = []
 
-    def cleanup(self,replicas):
+    def cleanup(self, replicas):
         """
         Write any remaining points in the trajectory and
         energy buffers to file, and close any open file handles.
         """
         # write the last of the trj and ene buffers 
-        for rep in range(0,len(replicas)):	
+        for rep in range(0, len(replicas)):	
             self.dump_trjqueue(replicas[rep])
             self.dump_enequeue(replicas[rep])
 

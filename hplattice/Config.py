@@ -16,11 +16,12 @@ class Config:
 
         # Important constants, energy parms
         self.randseed = 345  # random seed for random.Random()
-        self.k =  0.001987   # (kcal/K.mol) Boltzmann's constant 
-        self.T = 300.0       # reference temperataure units Kelvin (K)
-        self.eps = -5.0      # energetic strength of each contact (in units kT)
+        self.k = 0.001987  # (kcal/K.mol) Boltzmann's constant 
+        self.T = 300.0  # reference temperataure units Kelvin (K)
+        self.eps = -5.0  # energetic strength of each contact (in units kT)
         # energetic strength of each contact -- in units Joules (J/mol)
-        self.epsilon = self.eps * self.k * self.T  # kT = ~8.314 J/mol
+        # kT = ~8.314 J/mol
+        self.epsilon = self.eps * self.k * self.T
 
         # the contact state to be harmonically restrained
         self.RESTRAINED_STATE = [(1,4),(6,9)]
@@ -62,7 +63,7 @@ class Config:
         # located
         # each belonging to a foldable sequence, and containing the native
         # contact list 
-        self.NATIVEDIR = '../sequences/clist/hp13'
+        self.NATIVEDIR = './sequences/clist/hp13'
         
         if filename != None:
             self.read_configfile( filename )
@@ -149,27 +150,25 @@ class Config:
         self.ANALDIR = self.EXPDIR + '/anal'
         self.DATADIR = self.EXPDIR + '/data'
         
-        self.epsilon = self.eps*self.k*self.T
+        self.epsilon = self.eps * self.k * self.T
 
     def print_config(self):
-        print 'Configuration parameters from %s:'%self.filename
-        print
-        print '%-30s %s'%('HPSTRING',repr(self.HPSTRING))
-        print '%-30s %s'%('INITIALVEC',repr(self.INITIALVEC))
-        print '%-30s %s'%('randseed',repr(self.randseed))
-        print '%-30s %s'%('eps',repr(self.eps))
-        print '%-30s %s'%('RESTRAINED_STATE',repr(self.RESTRAINED_STATE))
-        print '%-30s %s'%('KSPRING',repr(self.KSPRING))
-        print '%-30s %s'%('NREPLICAS',repr(self.NREPLICAS))
-        print '%-30s %s'%('REPLICATEMPS',repr(self.REPLICATEMPS))
-        print '%-30s %s'%('MCSTEPS',repr(self.MCSTEPS))
-        print '%-30s %s'%('SWAPEVERY',repr(self.SWAPEVERY))
-        print '%-30s %s'%('SWAPMETHOD',repr(self.SWAPMETHOD))
-        print '%-30s %s'%('MOVESET',repr(self.MOVESET))
-        print '%-30s %s'%('EXPDIR',repr(self.EXPDIR))
-        print '%-30s %s'%('PRINTEVERY',repr(self.PRINTEVERY))
-        print '%-30s %s'%('TRJEVERY',repr(self.TRJEVERY))
-        print '%-30s %s'%('ENEEVERY',repr(self.ENEEVERY))
-        print '%-30s %s'%('NATIVEDIR',repr(self.NATIVEDIR))
-        print '%-30s %s'%('STOPATNATIVE',repr(self.STOPATNATIVE))
-
+        print 'Configuration parameters from %s:' % self.filename
+        print '%-30s %s' % ('HPSTRING', repr(self.HPSTRING))
+        print '%-30s %s' % ('INITIALVEC', repr(self.INITIALVEC))
+        print '%-30s %s' % ('randseed', repr(self.randseed))
+        print '%-30s %s' % ('eps', repr(self.eps))
+        print '%-30s %s' % ('RESTRAINED_STATE', repr(self.RESTRAINED_STATE))
+        print '%-30s %s' % ('KSPRING', repr(self.KSPRING))
+        print '%-30s %s' % ('NREPLICAS', repr(self.NREPLICAS))
+        print '%-30s %s' % ('REPLICATEMPS', repr(self.REPLICATEMPS))
+        print '%-30s %s' % ('MCSTEPS', repr(self.MCSTEPS))
+        print '%-30s %s' % ('SWAPEVERY', repr(self.SWAPEVERY))
+        print '%-30s %s' % ('SWAPMETHOD', repr(self.SWAPMETHOD))
+        print '%-30s %s' % ('MOVESET', repr(self.MOVESET))
+        print '%-30s %s' % ('EXPDIR', repr(self.EXPDIR))
+        print '%-30s %s' % ('PRINTEVERY', repr(self.PRINTEVERY))
+        print '%-30s %s' % ('TRJEVERY', repr(self.TRJEVERY))
+        print '%-30s %s' % ('ENEEVERY', repr(self.ENEEVERY))
+        print '%-30s %s' % ('NATIVEDIR', repr(self.NATIVEDIR))
+        print '%-30s %s' % ('STOPATNATIVE', repr(self.STOPATNATIVE))

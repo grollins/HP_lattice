@@ -28,7 +28,7 @@ class Chain:
 
         # an (n-1)-dimensional vector representation of the chain
         self.vec = []
-        for i in range(0,self.n-1):
+        for i in range(0, self.n-1):
             # {0,1,2,3} =  {n,w,s,e} = {U,R,D,L}
             self.vec.append(config.INITIALVEC[i])
 
@@ -43,11 +43,11 @@ class Chain:
         # Having these variables is convenient for use with
         # Monte Carlo algorithms, e.g.
         self.nextvec = []
-        for i in range(0,len(self.vec)):
+        for i in range(0, len(self.vec)):
             self.nextvec.append(self.vec[i])
 
         self.nextcoords = []
-        for i in range(0,len(self.coords)):
+        for i in range(0, len(self.coords)):
             self.nextcoords.append(self.coords[i])
 
         self.nextviable = self.viable
@@ -55,7 +55,7 @@ class Chain:
     def hpstr2bin(self):
         """Convert a string of type 'HPHPHPPPHHP' to a list of 1s and 0s.""" 
         binseq = []
-        for i in range(0,len(self.hpstring)):
+        for i in range(0, len(self.hpstring)):
             if self.hpstring[i] == 'H':
                 binseq.append(1)
             else:
@@ -68,7 +68,7 @@ class Chain:
         tmp = [(0,0)]
         x = 0
         y = 0
-        for i in range(0,len(thisvec)):
+        for i in range(0, len(thisvec)):
             if thisvec[i] == 0:
                 y = y + 1
             if thisvec[i] == 1:
@@ -97,7 +97,7 @@ class Chain:
         self.coords = self.vec2coords(self.vec)
         contactstate = []
         for c in range(0, len(self.coords)-1):
-            for d in range((c+3),len(self.coords)):
+            for d in range((c+3), len(self.coords)):
                 if self.hpstring[c] == 'H':
                     if self.hpstring[d] == 'H':
                         if (abs(self.coords[c][0]-self.coords[d][0]) + \
