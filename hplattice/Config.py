@@ -1,4 +1,4 @@
-import string
+from string import join, splitfields, joinfields
 
 
 class Config:
@@ -20,13 +20,13 @@ class Config:
         self.T = 300.0       # reference temperataure units Kelvin (K)
         self.eps = -5.0      # energetic strength of each contact (in units kT)
         # energetic strength of each contact -- in units Joules (J/mol)
-        self.epsilon = self.eps*self.k*self.T  # kT = ~8.314 J/mol
+        self.epsilon = self.eps * self.k * self.T  # kT = ~8.314 J/mol
 
         # the contact state to be harmonically restrained
         self.RESTRAINED_STATE = [(1,4),(6,9)]
         # (in squared-distance d^2 = D)
         # D spring constant (in kcal/mol per D)
-        self.KSPRING = 0.0*self.k*self.T
+        self.KSPRING = 0.0 * self.k * self.T
 
         # Monte Carlo and Replica Exchange parameters
         self.NREPLICAS = 8
@@ -53,10 +53,10 @@ class Config:
         self.STOPATNATIVE = 1
 
         # Trajectory data directory pathnames
-        self.EXPDIR = '/home6/voelzv/mc/exp/noswaps5e6'
-        self.SETUPDIR = self.EXPDIR + '/setup'
-        self.ANALDIR = self.EXPDIR + '/anal'
-        self.DATADIR = self.EXPDIR + '/data'
+        self.EXPDIR = './'
+        self.SETUPDIR = join(self.EXPDIR, 'setup')
+        self.ANALDIR = join(self.EXPDIR, 'anal')
+        self.DATADIR = join(self.EXPDIR, 'data')
    
         # Directory pathname where files of type 'HPPHPHPHPPHP.clist' are
         # located
@@ -86,15 +86,15 @@ class Config:
         lines = fin.readlines()
 
         i = 0
-        for i in range(0,len(lines)):
-            fields = string.splitfields(lines[i])
+        for i in range(0, len(lines)):
+            fields = splitfields(lines[i])
             if len(fields) > 0:
                 # Parse the variable assignments from the dummy Config file
                 if fields[0] == 'HPSTRING':
                     self.HPSTRING = fields[1]
         
                 if fields[0] == 'INITIALVEC':
-                    self.INITIALVEC = eval(string.joinfields(fields[1:]))
+                    self.INITIALVEC = eval(joinfields(fields[1:]))
         
                 if fields[0] == 'randseed':
                     self.randseed = eval(fields[1])
@@ -103,7 +103,7 @@ class Config:
                     self.eps = eval(fields[1])
         
                 if fields[0] == 'RESTRAINED_STATE':
-                    self.RESTRAINED_STATE = eval(string.joinfields(fields[1:]))
+                    self.RESTRAINED_STATE = eval(joinfields(fields[1:]))
         
                 if fields[0] == 'KSPRING':
                     self.KSPRING = eval(fields[1])
@@ -112,7 +112,7 @@ class Config:
                     self.NREPLICAS = eval(fields[1])
         
                 if fields[0] == 'REPLICATEMPS':
-                    self.REPLICATEMPS = eval(string.joinfields(fields[1:]))
+                    self.REPLICATEMPS = eval(joinfields(fields[1:]))
         
                 if fields[0] == 'MCSTEPS':
                     self.MCSTEPS = eval(fields[1])
@@ -121,13 +121,13 @@ class Config:
                     self.SWAPEVERY = eval(fields[1])
                 
                 if fields[0] == 'SWAPMETHOD':
-                    self.SWAPMETHOD = string.joinfields(fields[1:])
+                    self.SWAPMETHOD = joinfields(fields[1:])
                 
                 if fields[0] == 'MOVESET':
-                    self.MOVESET = string.joinfields(fields[1:])
+                    self.MOVESET = joinfields(fields[1:])
                 
                 if fields[0] == 'EXPDIR':
-                    self.EXPDIR = string.joinfields(fields[1:])
+                    self.EXPDIR = joinfields(fields[1:])
         
                 if fields[0] == 'PRINTEVERY':
                     self.PRINTEVERY = eval(fields[1])
