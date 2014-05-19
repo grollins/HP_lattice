@@ -2,3 +2,5 @@
 build
 .DS_store
 sequences
+examples/enumerate/enumerate_data
+examples/mcrex/mcrex_data

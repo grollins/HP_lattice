@@ -22,11 +22,10 @@ These values are printed as output.
 
 import sys
 
-from Config import *
-from Chain import *
-from Monty import *
-from Replica import *
-from Trajectory import *
+from hplattice.Config import Config
+from hplattice.Monty import randseed
+from hplattice.Replica import Replica
+from hplattice.Trajectory import Trajectory
 
 import random
 import string
