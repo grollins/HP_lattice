@@ -5,52 +5,47 @@ mcrex.py <configfile>
 
 Try:  mcrex.py mcrex.conf
 
-This program will read in an HP chain and run parameters specified in the configure file,
-and perform a replica exchange Monte Carlo simulation.
+This program will read in an HP chain and run parameters specified in the
+configure file, and perform a replica exchange Monte Carlo simulation.
 
-For the example "mcrex.conf", an 11-mer sequence is simulated, and the program ends when
-the native conformation (contact state) is found.
+For the example "mcrex.conf", an 11-mer sequence is simulated, and the program 
+ends when the native conformation (contact state) is found.
 A directory of results is output to directory ./mcrex_data
 """
 
 import sys
+from random import Random
+from string import strip
+from math import exp
 
 from hplattice.Config import Config
 from hplattice.Monty import randseed
 from hplattice.Replica import Replica
 from hplattice.Trajectory import Trajectory
 
-import random
-import string
-import math
-import os
 
-g = random.Random(randseed)
-
+g = Random(randseed)
 
 if len(sys.argv) < 2:
     print usage
     sys.exit(1)
- 
- 
-VERBOSE = True
-    
 
+VERBOSE = True
     
 ##########################
 # Functions 
 
-def attemptswap(replicas,swaps,viableswaps): 
+def attemptswap(replicas, swaps, viableswaps): 
 
     # Attempt a swap between replicas    
     if config.SWAPMETHOD == 'random pair':
         # pick pair at random
         r = g.random()
-        i = min(int(r*config.NREPLICAS),(config.NREPLICAS-1))
+        i = min(int(r * config.NREPLICAS), (config.NREPLICAS - 1))
         j = i
-        while (j==i):
+        while j == i:
             s = g.random()
-            j = min(int(s*config.NREPLICAS),(config.NREPLICAS-1))
+            j = min(int(s * config.NREPLICAS), (config.NREPLICAS - 1))
         # make sure j > i (needed for the swap criterion below)
         if j < i:
             tmp = i
@@ -60,8 +55,8 @@ def attemptswap(replicas,swaps,viableswaps):
     elif config.SWAPMETHOD == 'neighbors':    
         # pick neighboring pair at random 
         r = g.random()
-        i = min(int(r*(config.NREPLICAS-1)),(config.NREPLICAS-2))
-        j = i+1
+        i = min(int(r * (config.NREPLICAS - 1)), (config.NREPLICAS - 2))
+        j = i + 1
                 
     else:
         print 'Swap method', config.SWAPMETHOD, 'unknown.  Exiting...'
@@ -69,7 +64,7 @@ def attemptswap(replicas,swaps,viableswaps):
 
 
     if (VERBOSE):
-      print 'REX: Attempting swap between replicas',i,'and',j
+      print 'REX: Attempting swap between replicas', i, 'and', j
      
     randnum = g.random()
 
@@ -82,7 +77,7 @@ def attemptswap(replicas,swaps,viableswaps):
     delfactor = ((1/(replicas[j].mc.k*replicas[j].mc.temp)) - (1/(replicas[j].mc.k*replicas[i].mc.temp)))
     delfactor = delfactor * (replicas[j].mc.energy(replicas[j].chain) - replicas[i].mc.energy(replicas[i].chain) )
 
-    boltzfactor = math.exp(delfactor)
+    boltzfactor = exp(delfactor)
     if randnum < boltzfactor:
 
         # swap the ***temperatures***
@@ -106,12 +101,6 @@ def attemptswap(replicas,swaps,viableswaps):
     swaps[j] = swaps[j] + 1
 
     return retval
-
-
-
-
-
-
 
 #####################################
 # Main Program
@@ -137,18 +126,17 @@ if __name__ == '__main__':
     
     # Make a list of config.NREPLICAS Replica objects
     replicas = []           # a list of Replica objects
-    for i in range(0,config.NREPLICAS):
-        replicas.append(Replica(config,i))
+    for i in range(0, config.NREPLICAS):
+        replicas.append( Replica(config,i) )
     
     # Each replica is just a container for the objects:
     #     replica[i].chain   <-- the HP chain
     #     replica[i].mc      <-- A Monte Carlo move set object that performs operations on the chain
     
     # a trajectory object to handle the work of writing trajectories
-    traj = Trajectory(replicas,config)  
+    traj = Trajectory(replicas, config)  
     if VERBOSE:
-        print 'Trajectory REPFILES:',traj.repfiles_trj
-
+        print 'Trajectory REPFILES:', traj.repfiles_trj
 
     # Keep track of statistics for the replica exchange simulation, for each replica:
 
@@ -164,7 +152,7 @@ if __name__ == '__main__':
     viableswaps = []           # the number of viable swaps
     swap_acceptance = []       # the fraction of swaps that were accepted
     
-    for i in range(0,config.NREPLICAS):
+    for i in range(0, config.NREPLICAS):
          steps.append(0)
          viablesteps.append(0)    
          acceptedsteps.append(0)    
@@ -174,29 +162,29 @@ if __name__ == '__main__':
          viableswaps.append(0)
          swap_acceptance.append(0)
     
-    
     prodstep = 1
     foundnative = 0
-    while (prodstep < (config.MCSTEPS+1))&(foundnative==0):
+    while (prodstep < (config.MCSTEPS + 1)) & (foundnative == 0):
     
         # Run the replicas for a production cycle...
-        for rep in range(0,config.NREPLICAS):
+        for rep in range(0, config.NREPLICAS):
 
             ### Propose a new MC move
-            if string.strip(config.MOVESET) == 'MS1':
+            if strip(config.MOVESET) == 'MS1':
                 replicas[rep].mc.move1(replicas[rep])
-            elif string.strip(config.MOVESET) == 'MS2':
+            elif strip(config.MOVESET) == 'MS2':
                 replicas[rep].mc.move2(replicas[rep])
-            elif string.strip(config.MOVESET) == 'MS3':
+            elif strip(config.MOVESET) == 'MS3':
                 replicas[rep].mc.move3(replicas[rep])
-            elif string.strip(config.MOVESET) == 'MS4':
+            elif strip(config.MOVESET) == 'MS4':
                 replicas[rep].mc.move4(replicas[rep])
             else: 
-                print 'MC MOVESET=',config.MOVESET,'not supported!'
+                print 'MC MOVESET=', config.MOVESET, 'not supported!'
                 print 'Exiting....'
                 sys.exit(1)
 
-            if replicas[rep].chain.nextviable == 1:     # count this move only if the chain is viable
+            # count this move only if the chain is viable
+            if replicas[rep].chain.nextviable == 1:
                 ### accept with metroplis criterion
                 accept = replicas[rep].mc.metropolis(replicas[rep])
                 # if accept is yes, the chain is updated (see Monty.py)
@@ -220,7 +208,6 @@ if __name__ == '__main__':
                 if (nativeclist == thisclist):
                     foundnative = 1
 
-
         # After the production cycle,      
         if (prodstep % config.SWAPEVERY) == 0:
 
@@ -236,7 +223,6 @@ if __name__ == '__main__':
 
               else:  
                 print str(prodstep)+'\tUnsuccessful swap attempt.'
-
 
         # Print status
         if (prodstep % config.PRINTEVERY) == 0:
@@ -261,44 +247,56 @@ if __name__ == '__main__':
                     swap_acceptance[rep] = 0.0
 
             # Output the status of the simulation
-            print prodstep,'production steps'
-            print '%-12s %-12s %-12s %-12s %-12s %-12s %-12s '%('replica','viablesteps','steps','MCaccept','viableswaps','swaps','SWAPaccept')
-            for rep in range(0,len(steps)):
-                print '%-12d %-12d %-12d %-12s %-12d %-12d %-12s '%(rep,viablesteps[rep],steps[rep],'%1.3f'%moveacceptance[rep],swaps[rep],viableswaps[rep],'%1.3f'%swap_acceptance[rep])
+            print prodstep, 'production steps'
+            print '%-12s %-12s %-12s %-12s %-12s %-12s %-12s ' % \
+                  ('replica','viablesteps','steps','MCaccept','viableswaps',
+                   'swaps','SWAPaccept')
+            for rep in range(0, len(steps)):
+                print '%-12d %-12d %-12d %-12s %-12d %-12d %-12s ' % \
+                    (rep,viablesteps[rep],steps[rep],
+                     '%1.3f' % moveacceptance[rep], swaps[rep],
+                     viableswaps[rep], '%1.3f' % swap_acceptance[rep])
             if config.STOPATNATIVE == 1:
                 print 'NATIVE CLIST:', nativeclist
-            print '%-8s %-12s %-12s'%('replica','foundnative','contact state') 
+            print '%-8s %-12s %-12s' % \
+                ('replica', 'foundnative', 'contact state') 
             for replica in replicas:
-                print '%-8d %-12d %s'%(replica.repnum,foundnative,repr(replica.chain.contactstate()))
+                print '%-8d %-12d %s' % \
+                    (replica.repnum, foundnative,
+                     repr(replica.chain.contactstate()))
 
         # Continue to the next production cycle!
         prodstep = prodstep + 1
 
-            
     # write the acceptance ratios to the <rundir>/data directory
-    faccept = open(config.DATADIR+'/acceptance','w')
-    for i in range(0,len(config.REPLICATEMPS)):
+    faccept = open(config.DATADIR + '/acceptance', 'w')
+    for i in range(0, len(config.REPLICATEMPS)):
         tmp = str(config.REPLICATEMPS[i]) + '\t'
-        tmp = tmp +  str(acceptedsteps[i]) + '\t'
-        tmp = tmp +  str(viablesteps[i]) + '\t'
-        tmp = tmp +  str(steps[i]) + '\n'
-
+        tmp = tmp + str(acceptedsteps[i]) + '\t'
+        tmp = tmp + str(viablesteps[i]) + '\t'
+        tmp = tmp + str(steps[i]) + '\n'
 
     #Output the status of the simulation one last time...
-    print prodstep,'production steps'
-    print '%-12s %-12s %-12s %-12s %-12s %-12s %-12s '%('replica','viablesteps','steps','MOVEaccept','viableswaps','swaps','SWAPaccept')
-    for rep in range(0,len(steps)):
-        print '%-12d %-12d %-12d %-12s %-12d %-12d %-12s '%(rep,viablesteps[rep],steps[rep],'%1.3f'%moveacceptance[rep],swaps[rep],viableswaps[rep],'%1.3f'%swap_acceptance[rep])
+    print prodstep, 'production steps'
+    print '%-12s %-12s %-12s %-12s %-12s %-12s %-12s ' % \
+            ('replica','viablesteps','steps','MOVEaccept',
+             'viableswaps','swaps','SWAPaccept')
+    for rep in range(0, len(steps)):
+        print '%-12d %-12d %-12d %-12s %-12d %-12d %-12s ' % \
+            (rep,viablesteps[rep], steps[rep],
+             '%1.3f' % \ moveacceptance[rep],
+              swaps[rep], viableswaps[rep],
+              '%1.3f' % swap_acceptance[rep])
     if config.STOPATNATIVE == 1:
         print 'NATIVE CLIST:', nativeclist
-    print '%-8s %-12s %-12s'%('replica','foundnative','contact state')    
+    print '%-8s %-12s %-12s' % \
+        ('replica','foundnative','contact state')    
     for replica in replicas:
-        print '%-8d %-12d %s'%(replica.repnum,foundnative,repr(replica.chain.contactstate()))
+        print '%-8d %-12d %s' % \
+            (replica.repnum,foundnative,repr(replica.chain.contactstate()))
 
     faccept.write(tmp)  
     faccept.close()
-
-
     
     # write the last of the trj and ene buffers
     # and close all the open trajectory file handles

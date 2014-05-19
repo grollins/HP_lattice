@@ -13,7 +13,8 @@ The problem tablulates:
     1) the density of states (in energies/contacts)
     
     2) the number density of unique contact states, i.e. disjoint collections
-       of microscopic conformations all sharing a unique set of interresidue contacts. 
+       of microscopic conformations all sharing a unique set of interresidue
+       contacts. 
 
 These values are printed as output.
 
@@ -21,27 +22,21 @@ These values are printed as output.
 
 
 import sys
+from random import Random
 
 from hplattice.Config import Config
 from hplattice.Monty import randseed
 from hplattice.Replica import Replica
 from hplattice.Trajectory import Trajectory
 
-import random
-import string
-import math
-import os
 
 g = random.Random(randseed)
-
 
 if len(sys.argv) < 2:
     print 'Usage:  enumerate.py <configfile>'
     sys.exit(1)
- 
- 
+
 VERBOSE = 1
-    
 
 if __name__ == '__main__':
 
@@ -54,24 +49,28 @@ if __name__ == '__main__':
     if VERBOSE: config.print_config()
     
     # create a single Replica
-    replicas = [ Replica(config,0) ]
+    replicas = [ Replica(config, 0) ]
     
-    traj = Trajectory(replicas,config)        # a trajectory object to write out trajectories
+    # a trajectory object to write out trajectories
+    traj = Trajectory(replicas,config)
 
     nconfs = 0
-    contact_states = {}                # dictionary of {repr{contact state}: number of conformations}
-    contacts = {}               # dictionary of {number of contacts: number of conformations}
-
+    # dictionary of {repr{contact state}: number of conformations}
+    contact_states = {}
+    # dictionary of {number of contacts: number of conformations}
+    contacts = {}
 
     #################
     #
-    # This is a useful subroutine for enumerating all conformations of an HP chain
+    # This is a useful subroutine for enumerating all conformations
+    # of an HP chain
     #
-    # NOTE: in order for this to work correctly, the initial starting vector must be [0,0,0,....,0]
+    # NOTE: in order for this to work correctly, the initial starting
+    # vector must be [0,0,0,....,0]
     # 
     done = 0
     while not(done):
-                        
+
         if len(replicas[0].chain.vec) == replicas[0].chain.n-1:    
             if replicas[0].chain.viable:                
                 if replicas[0].chain.nonsym():
@@ -112,13 +111,13 @@ if __name__ == '__main__':
             else:
                 done = replicas[0].chain.shift()
 
-        if replicas[0].chain.vec[0] == 1:    # skip the other symmetries
+        if replicas[0].chain.vec[0] == 1:
+            # skip the other symmetries
             break        
     #
     #
-    #################
-        
-    
+    #################    
+
     # write the last of the trj and ene buffers
     # and close all the open trajectory file handles
     traj.cleanup(replicas)
@@ -126,18 +125,17 @@ if __name__ == '__main__':
     # print out the density of contact states
     print
     print 'DENSITY of CONTACT STATES:'
-    print '%-40s %s'%('contact state','number of conformations')
+    print '%-40s %s' % ('contact state','number of conformations')
     for state in contact_states.keys():
-        print '%-40s %d'%(state, contact_states[state])
+        print '%-40s %d' % (state, contact_states[state])
     
     # print out the density of states (energies)
     print 
     print 'DENSITY of STATES (in energies/contacts):'
-    print '%-20s %-20s %s'%('number of contacts','energy (kT)','number of conformations')
+    print '%-20s %-20s %s' % \
+            ('number of contacts', 'energy (kT)',
+             'number of conformations')
     for c in contacts.keys():
-        print '%-20d %-20d %d'%(c,config.eps*c,contacts[c])
+        print '%-20d %-20d %d' % (c, config.eps * c, contacts[c])
     print
-    print 'at T = %4.1f K'%config.T
-        
-
-    
+    print 'at T = %4.1f K' % config.T
