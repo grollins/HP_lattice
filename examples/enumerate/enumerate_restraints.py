@@ -31,7 +31,7 @@ from hplattice.Replica import Replica
 from hplattice.Trajectory import Trajectory
 
 
-def harmonic(dist,spring,d=1):
+def harmonic(dist, spring, d=1):
     """DO a harmonic potential after d=d, before have no penalty in energy"""
     if dist <= d:
         return 0
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         sys.exit(1)
         
     configfile = sys.argv[1]
-    config = Config( filename=configfile)
+    config = Config( filename=configfile )
     if len(config.RESTRAINED_STATE) > 0:
         restraint = \
             DistRestraint(config.RESTRAINED_STATE, config.KSPRING)
@@ -115,9 +115,9 @@ if __name__ == '__main__':
                     # tally the contact state
                     this_state_repr = repr(state)
                     if contact_states.has_key((this_state_repr, D)) == False:
-                        contact_states[(this_state_repr,D)] = 1
+                        contact_states[(this_state_repr, D)] = 1
                     else:
-                        contact_states[(this_state_repr,D)] +=1
+                        contact_states[(this_state_repr, D)] +=1
 
                     # tally the number of conformations
                     nconfs = nconfs + 1
@@ -154,17 +154,17 @@ if __name__ == '__main__':
     # print out the density of contact states
     print
     print 'DENSITY of CONTACT STATES:'
-    print '%-40s %s' % ('contact state','number of conformations')
+    print '%-40s %s' % ('contact state', 'number of conformations')
     for state in contact_states.keys():
-            a, b = state
-            #if "(0, 13)" in a:
-            #    continue
-            #if "(1, 8)" in a:
-            #    continue
-            #else:
-            #if a.count(',') == 9:
-            #        print '%-40s %10s %d'%(a,b,contact_states[state])
-            print '%-40s %10s %d' % (a, b, contact_states[state])
+        a, b = state
+        #if "(0, 13)" in a:
+        #    continue
+        #if "(1, 8)" in a:
+        #    continue
+        #else:
+        #if a.count(',') == 9:
+        #        print '%-40s %10s %d'%(a,b,contact_states[state])
+        print '%-40s %10s %d' % (a, b, contact_states[state])
 
     # print out the density of states (energies)
     print 

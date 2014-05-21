@@ -1,59 +1,32 @@
-#! /usr/bin/python
-
-usage = """
-enumerate.py <configfile>
-
-Try:  enumerate.py enumerate.conf
-
-This program will read in an HP chain specified in the configure file,
-and perform a full enumeration of conformational space.
-
-The problem tablulates:
-
-    1) the density of states (in energies/contacts)
-    
-    2) the number density of unique contact states, i.e. disjoint collections
-       of microscopic conformations all sharing a unique set of interresidue
-       contacts. 
-
-These values are printed as output.
-
-"""
-
-
 import sys
-from random import Random
+sys.path.append('../')
+
+from timer import Timer
 
 from hplattice.Config import Config
-from hplattice.Monty import randseed
 from hplattice.Replica import Replica
-from hplattice.Trajectory import Trajectory
+
+HP_STRING_SET = \
+    ((4, ['HPPH', 'HHPH', 'HPHH', 'HHHH']),
+     (6, ['HHPPHH', 'HPPHPH', 'HHPHPH', 'HPPHHH']),
+     (10, ['HHPPHPPHPH', 'HPHPPHPPHH', 'PHPPHHPPHP', 'HPPHPPHPPH']),
+     (12, ['HPHPPHPHPHPH', 'PHPPHPPHPPHP', 'HHHHHPHHPHPH']),
+     (14, ['HHHPHHPHHHHPPH', 'HPPPPHPPHPPHPH', 'HHPPHHPHPHHHHH']),
+     # (20, ['PHHHPPHHHPPPPPHHPPHP', 'HHHHPPHHHHPHHPHPPHHH',
+     # 'HHHPPPPHPPHPPPPHPPHP', 'HHHHPPHHPHHHHHPPHPHH'])
+)
 
 
-g = Random(randseed)
-
-if len(sys.argv) < 2:
-    print 'Usage:  enumerate.py <configfile>'
-    sys.exit(1)
-
-VERBOSE = 1
-
-if __name__ == '__main__':
-
-    if len(sys.argv) < 2:
-        print usage
-        sys.exit(1)
-        
-    configfile = sys.argv[1]
+def enumerate_states(hp_string, initial_vec):
+    configfile = 'enumerate.conf'
     config = Config( filename=configfile )
-    if VERBOSE: config.print_config()
-    
+    config.HPSTRING = hp_string
+    config.INITIALVEC = initial_vec
+    config.RESTRAINED_STATE = []
+
     # create a single Replica
     replicas = [ Replica(config, 0) ]
     
-    # a trajectory object to write out trajectories
-    traj = Trajectory(replicas, config)
-
     nconfs = 0
     # dictionary of {repr{contact state}: number of conformations}
     contact_states = {}
@@ -92,14 +65,6 @@ if __name__ == '__main__':
                     # tally the number of conformations
                     nconfs = nconfs + 1
 
-                    # write to trajectory
-                    if (nconfs % config.TRJEVERY) == 0:
-                        traj.queue_trj(replicas[0])
-                    # print progress
-                    if (nconfs % config.PRINTEVERY) == 0:
-                        print '%-4d confs  %s' % \
-                            (nconfs, replicas[0].chain.vec)
-
                 done = replicas[0].chain.shift()
                     
             else:
@@ -118,10 +83,6 @@ if __name__ == '__main__':
     #
     #################    
 
-    # write the last of the trj and ene buffers
-    # and close all the open trajectory file handles
-    traj.cleanup(replicas)
-    
     # print out the density of contact states
     print
     print 'DENSITY of CONTACT STATES:'
@@ -140,3 +101,21 @@ if __name__ == '__main__':
             (num_contacts, config.eps * num_contacts, num_confs)
     print
     print 'at T = %4.1f K' % config.T
+
+def main():
+    timing_data = []
+    for N, hp_string_list in HP_STRING_SET:
+        for this_hp_string in hp_string_list:
+            print N, this_hp_string
+            initial_vec = [0] * (N - 1)
+            with Timer() as t:
+                enumerate_states(this_hp_string, initial_vec)
+            time_elapsed = t.interval
+            this_data = (N, time_elapsed, this_hp_string)
+            timing_data.append(this_data)
+
+    for td in timing_data:
+        print "%d  %.2e  %s" % td
+
+if __name__ == '__main__':
+    main()

@@ -213,7 +213,7 @@ class DistRestraint:
      where D = sum_{i,j} d^2_ij over all contacts."""
     def __init__(self, contacts, kspring):
         """Initialize the DistRestraint object"""
-        # a list of duples (start of chain is 0)
+        # a list of tuples (start of chain is 0)
         self.contacts = contacts
         # spring constant for restraint
         # (J/[lattice space]^2)
@@ -221,16 +221,15 @@ class DistRestraint:
 
     def energy(self, chain):
         """ return the energy of the distance restraint"""
-        return self.kspring*self.D(chain)
+        return self.kspring * self.D(chain)
 
     def D(self, chain):
         """Return the sum of squared-distances over the selected contacts."""
         D = 0.0
         for i in range(0, len(self.contacts)):
+            # print 'contact', i, self.contacts[i], chain.coords
             c = self.contacts[i][0]
             d = self.contacts[i][1]
-            D = D + (chain.coords[c][0]-chain.coords[d][0]) * \
-                (chain.coords[c][0]-chain.coords[d][0])
-            D = D + (chain.coords[c][1]-chain.coords[d][1]) * \
-                (chain.coords[c][1]-chain.coords[d][1])
+            D = D + (chain.coords[c][0]-chain.coords[d][0])**2
+            D = D + (chain.coords[c][1]-chain.coords[d][1])**2
         return D

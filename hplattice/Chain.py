@@ -174,17 +174,17 @@ class Chain:
             # update vec 
             self.vec[i] = self.vec[i] + 1
             # update coords: rotate "up" to "right"
-            self.coords[i+1] = (self.coords[i+1][0] + 1,self.coords[i+1][1] - 1)
+            self.coords[i+1] = (self.coords[i+1][0] + 1, self.coords[i+1][1] - 1)
             # update viability
             self.viable = 1
             if self.coords.count(self.coords[i+1]) > 1:
                 self.viable = 0
-        
+
         elif self.vec[i] == 1:
             # update vec
             self.vec[i] = self.vec[i] + 1
             # update coords: rotate "right" to "down"
-            self.coords[i+1] = (self.coords[i+1][0] - 1,self.coords[i+1][1] - 1)
+            self.coords[i+1] = (self.coords[i+1][0] - 1, self.coords[i+1][1] - 1)
             # update viability
             self.viable = 1
             if self.coords.count(self.coords[i+1]) > 1:
@@ -195,7 +195,7 @@ class Chain:
             # update vec
             self.vec[i] = self.vec[i] + 1
             # update coords: rotate "down" to "left"
-            self.coords[i+1] = (self.coords[i+1][0] - 1,self.coords[i+1][1] + 1)
+            self.coords[i+1] = (self.coords[i+1][0] - 1, self.coords[i+1][1] + 1)
             # update viability
             self.viable = 1
             if self.coords.count(self.coords[i+1]) > 1:
