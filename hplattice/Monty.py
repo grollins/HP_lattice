@@ -30,6 +30,10 @@ class Monty:
         self.restraint = DistRestraint(config.RESTRAINED_STATE, config.KSPRING)
         self.lastenergy = self.energy(chain) + self.restraint.energy(chain)
 
+    def _do_rigid_rot(self, vecindex, direction, replica):
+        replica.chain.nextvec[vecindex:] = \
+            (replica.chain.nextvec[vecindex:] + direction) % 4
+
     def move1(self, replica):
         """Apply moveset 'MC1' to the chain:
            (i)  three-bead flips
@@ -58,7 +62,7 @@ class Monty:
         replica.chain.nextviable = \
             replica.chain.viability(replica.chain.nextcoords)
 
-    def move2(self,replica):
+    def move2(self, replica):
         """
         Apply moveset MC2 to the chain:
         (i)   three-bead flips
@@ -87,9 +91,7 @@ class Monty:
                 replica.chain.nextvec[vecindex + 1] = tmp1
             else: 
                 ### default: do a rigid rotation
-                for v in range(vecindex, len(replica.chain.nextvec)):
-                    replica.chain.nextvec[v] = \
-                        (replica.chain.nextvec[v] + direction) % 4
+                self._do_rigid_rot(vecindex, direction, replica)
 
         # if possible, 1/3 of the time do a crankshft
         # (1st and 3rd dirs must be different)
@@ -102,15 +104,11 @@ class Monty:
                 replica.chain.nextvec[vecindex + 2] = tmp1
             else: 
                 ### default: do a rigid rotation
-                for v in range(vecindex, len(replica.chain.nextvec)):
-                    replica.chain.nextvec[v] = \
-                        (replica.chain.nextvec[v] + direction) % 4
+                self._do_rigid_rot(vecindex, direction, replica)
 
         else: 
             ### default: do a rigid rotation
-            for v in range(vecindex, len(replica.chain.nextvec)):
-                replica.chain.nextvec[v] = \
-                    (replica.chain.nextvec[v] + direction) % 4
+            self._do_rigid_rot(vecindex, direction, replica)
 
         replica.chain.nextcoords = \
             replica.chain.vec2coords(replica.chain.nextvec)

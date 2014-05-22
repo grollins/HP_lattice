@@ -1,3 +1,28 @@
+from numba import jit, i4
+from numpy import array, zeros, int32
+from scipy.spatial.distance import pdist
+
+
+def vec2coords(chain_vecs, coords):
+    """Convert an array of chain vectors to a 2d array of
+       coordinates."""
+    x = 0
+    y = 0
+    for i in range(0, len(chain_vecs)):
+        if chain_vecs[i] == 0:
+            y = y + 1
+        if chain_vecs[i] == 1:
+            x = x + 1
+        if chain_vecs[i] == 2:
+            y = y - 1
+        if chain_vecs[i] == 3:
+            x = x - 1
+        coords[i+1,0] = x
+        coords[i+1,1] = y
+    return coords
+fast_vec2coords = jit(i4[:,:](i4[:],i4[:,:]))(vec2coords)
+
+
 class Chain:
     """
     An object to represent the 2D HP lattice chain and its attributes,
@@ -27,10 +52,11 @@ class Chain:
         #  the origin on a two-dimensional square lattice.
 
         # an (n-1)-dimensional vector representation of the chain
-        self.vec = []
-        for i in range(0, self.n-1):
+        # self.vec = []
+        # for i in range(0, self.n-1):
             # {0,1,2,3} =  {n,w,s,e} = {U,R,D,L}
-            self.vec.append(config.INITIALVEC[i])
+            # self.vec.append(config.INITIALVEC[i])
+        self.vec = array(config.INITIALVEC, int32)
 
         # the 2D coordinates of the chain, as a list of duples 
         self.coords = self.vec2coords(self.vec)
@@ -42,13 +68,16 @@ class Chain:
         #  **proposed** new conformation.
         # Having these variables is convenient for use with
         # Monte Carlo algorithms, e.g.
-        self.nextvec = []
-        for i in range(0, len(self.vec)):
-            self.nextvec.append(self.vec[i])
 
-        self.nextcoords = []
-        for i in range(0, len(self.coords)):
-            self.nextcoords.append(self.coords[i])
+        # self.nextvec = []
+        # for i in range(0, len(self.vec)):
+            # self.nextvec.append(self.vec[i])
+        self.nextvec = self.vec.copy()
+
+        # self.nextcoords = []
+        # for i in range(0, len(self.coords)):
+        #     self.nextcoords.append(self.coords[i])
+        self.nextcoords = self.coords.copy()
 
         self.nextviable = self.viable
 
@@ -62,33 +91,30 @@ class Chain:
                 binseq.append(0)
         return binseq
 
-    def vec2coords(self, thisvec):
-        """Convert a list of chain vectors to a list of
-           coordinates (tuples).""" 
-        tmp = [(0,0)]
-        x = 0
-        y = 0
-        for i in range(0, len(thisvec)):
-            if thisvec[i] == 0:
-                y = y + 1
-            if thisvec[i] == 1:
-                x = x + 1
-            if thisvec[i] == 2:
-                y = y - 1
-            if thisvec[i] == 3:
-                x = x - 1
-            tmp.append((x,y))
-        return tmp
+    def vec2coords(self, vec):
+        c = fast_vec2coords( vec, zeros([len(vec),2], int32) )
+        # return c.tolist()
+        return c
 
     def viability(self, thesecoords):
         """Return 1 if the chain coordinates are self-avoiding,
            0 if not."""
         self.viable = 1
-        for c in thesecoords:
-            if thesecoords.count(c) > 1:
+        coords = [(row[0], row[1]) for row in thesecoords]
+        for c in coords:
+            if coords.count(c) > 1:
                 self.viable = 0
                 break
-        return self.viable
+        # for idx, this_row in enumerate(thesecoords):
+        #     if any((this_row == x).all() for x in thesecoords[idx+1:,:]):
+        #         self.viable = 0
+        #         break
+        # return self.viable
+        # d = pdist(thesecoords)
+        # is_overlapping = (d == 0.0).any()
+        # is_viable = (is_overlapping is False)
+        # self.viable = is_viable
+        # return self.viable
 
     def contactstate(self):
         """Return the contact state of the chain as a list of
