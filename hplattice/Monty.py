@@ -1,7 +1,26 @@
 from random import Random, random
 from math import floor, exp
+from numpy import array, int32
+from numba import jit, i4
 
 randseed = 422
+
+
+def count_H_contacts(coords, hpstring):
+    num_contacts = 0
+    for c in range(0, len(coords)-1):
+        # for coordinates, except last one
+        for d in range((c+3), len(coords)):
+            # for all beads at least three ahead of this one
+            # if c in H_inds and d in H_inds:
+            if hpstring[c] == 'H' and hpstring[d] == 'H':
+                this_dist = (abs(coords[c][0]-coords[d][0]) + \
+                             abs(coords[c][1]-coords[d][1]))
+                if this_dist == 1:
+                    # and they're next to each other
+                    num_contacts += 1
+    return num_contacts
+fast_count_H_contacts = jit(i4(i4[:,:]))(count_H_contacts)
 
 
 class Monty:
@@ -14,7 +33,10 @@ class Monty:
         # NOTE: random.Random is an object that
         #  needs an integer seed for initialization
         self.g = Random(config.randseed)
-    
+        
+        # indices of hydrophic beads
+        self.H_inds = [idx for idx, bead in enumerate(chain.hpstring) if bead == 'H']
+
         # The names of the available Monte Carlo movesets
         self.movesets = ['MC1','MC2','MC3','MC4']
         # The temperature (in K)
@@ -58,7 +80,7 @@ class Monty:
             replica.chain.nextvec[vecindex + 1] = tmp
 
         replica.chain.nextcoords = \
-            replica.chain.vec2coords(replica.chain.nextvec)
+            replica.chain.vec2coords(replica.chain.nextvec, replica.chain.nextcoords)
         replica.chain.nextviable = \
             replica.chain.viability(replica.chain.nextcoords)
 
@@ -83,35 +105,35 @@ class Monty:
 
         # if possible, 1/3 of the time do a three-bead flip
         # (dirs must be different)
-        if (t < 0.33333) & (vecindex < len(replica.chain.nextvec)-1):
+        if (t < 0.33333) and (vecindex < len(replica.chain.nextvec)-1):
             tmp1 = replica.chain.nextvec[vecindex] 
             tmp2 = replica.chain.nextvec[vecindex+1]
             if (tmp1 != tmp2):
                 replica.chain.nextvec[vecindex] = tmp2 
                 replica.chain.nextvec[vecindex + 1] = tmp1
             else: 
-                ### default: do a rigid rotation
+                # default: do a rigid rotation
                 self._do_rigid_rot(vecindex, direction, replica)
 
         # if possible, 1/3 of the time do a crankshft
         # (1st and 3rd dirs must be different)
-        elif (t < 0.66666) & (vecindex < len(replica.chain.nextvec)-2):
+        elif (t < 0.66666) and (vecindex < len(replica.chain.nextvec)-2):
             tmp1 = replica.chain.nextvec[vecindex] 
             tmp2 = replica.chain.nextvec[vecindex+2]
-            if (t < 0.66666) & (tmp1 != tmp2):
+            if (t < 0.66666) and (tmp1 != tmp2):
                 ### crankshaft move
                 replica.chain.nextvec[vecindex] = tmp2 
                 replica.chain.nextvec[vecindex + 2] = tmp1
             else: 
-                ### default: do a rigid rotation
+                # default: do a rigid rotation
                 self._do_rigid_rot(vecindex, direction, replica)
 
         else: 
-            ### default: do a rigid rotation
+            # default: do a rigid rotation
             self._do_rigid_rot(vecindex, direction, replica)
 
         replica.chain.nextcoords = \
-            replica.chain.vec2coords(replica.chain.nextvec)
+            replica.chain.vec2coords(replica.chain.nextvec, replica.chain.nextcoords)
         replica.chain.nextviable = \
             replica.chain.viability(replica.chain.nextcoords)
 
@@ -138,7 +160,7 @@ class Monty:
         replica.chain.nextvec[vecindex] = \
             (replica.chain.nextvec[vecindex] + direction) % 4
         replica.chain.nextcoords = \
-            replica.chain.vec2coords(replica.chain.nextvec)
+            replica.chain.vec2coords(replica.chain.nextvec, replica.chain.nextcoords)
         replica.chain.nextviable = \
             replica.chain.viability(replica.chain.nextcoords)
 
@@ -159,12 +181,10 @@ class Monty:
             direction = -1
 
         ### a rigid rotation
-        for v in range(vecindex, len(replica.chain.nextvec)):
-            replica.chain.nextvec[v] = \
-                (replica.chain.nextvec[v] + direction) % 4
+        self._do_rigid_rot(vecindex, direction, replica)
 
         replica.chain.nextcoords = \
-            replica.chain.vec2coords(replica.chain.nextvec)
+            replica.chain.vec2coords(replica.chain.nextvec, replica.chain.nextcoords)
         replica.chain.nextviable = \
             replica.chain.viability(replica.chain.nextcoords)
 
@@ -183,27 +203,44 @@ class Monty:
 
         if randnum < boltzfactor:
             # update the chain
-            for i in range(0, len(replica.chain.vec)):
-                replica.chain.vec[i] = replica.chain.nextvec[i]
-            for i in range(0, len(replica.chain.coords)):
-                replica.chain.coords[i] = replica.chain.nextcoords[i]
-                replica.chain.viable = replica.chain.nextviable
+            self._update_chain(replica)
             # update the lastenergy
             self.lastenergy = thisenergy
             return 1
         else:
             return 0
 
-    def energy(self,chain):
+    def _update_chain(self, replica):
+        replica.chain.vec[:] = replica.chain.nextvec[:]
+        replica.chain.coords[:,:] = replica.chain.nextcoords[:,:]
+        replica.chain.viable = replica.chain.nextviable
+
+    def energy(self, chain):
         """Calculate potential energy of the chain."""
-        num = 0.0
-        for c in range(0, len(chain.coords)-1):
-            for d in range((c+3), len(chain.coords)):
-                if chain.hpstring[c] == 'H':
-                    if chain.hpstring[d] == 'H':
-                        if (abs(chain.coords[c][0]-chain.coords[d][0]) + abs(chain.coords[c][1]-chain.coords[d][1])) == 1:
-                                num = num + 1.0
-        return num * self.epsilon
+        # H_inds = array(H_inds, int32)
+        # num_contacts = fast_count_H_contacts(chain.coords, chain.hpstring)
+        num_contacts = 0.0
+        for i, this_H_idx in enumerate(self.H_inds):
+            for other_H_idx in self.H_inds[i+1:]:
+                if (other_H_idx - this_H_idx) >= 3:
+                    this_dist = (abs(chain.coords[this_H_idx][0]-chain.coords[other_H_idx][0]) + \
+                                 abs(chain.coords[this_H_idx][1]-chain.coords[other_H_idx][1]))
+                    if this_dist == 1:
+                        # and they're next to each other
+                        num_contacts += 1
+
+        # for c in range(0, len(chain.coords)-1):
+        #     # for coordinates, except last one
+        #     for d in range((c+3), len(chain.coords)):
+        #         # for all beads at least three ahead of this one
+        #         if chain.hpstring[c] == 'H' and chain.hpstring[d] == 'H':
+        #             # if this is an H pair
+        #             this_dist = (abs(chain.coords[c][0]-chain.coords[d][0]) + \
+        #                          abs(chain.coords[c][1]-chain.coords[d][1]))
+        #             if this_dist == 1:
+        #                 # and they're next to each other
+        #                 num_contacts += 1
+        return num_contacts * self.epsilon
 
 
 class DistRestraint:

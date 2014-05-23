@@ -1,6 +1,5 @@
 from numba import jit, i4
-from numpy import array, zeros, int32
-from scipy.spatial.distance import pdist
+from numpy import array, zeros, int32, nonzero
 
 
 def vec2coords(chain_vecs, coords):
@@ -8,6 +7,8 @@ def vec2coords(chain_vecs, coords):
        coordinates."""
     x = 0
     y = 0
+    coords[0,0] = x
+    coords[0,1] = y
     for i in range(0, len(chain_vecs)):
         if chain_vecs[i] == 0:
             y = y + 1
@@ -52,33 +53,21 @@ class Chain:
         #  the origin on a two-dimensional square lattice.
 
         # an (n-1)-dimensional vector representation of the chain
-        # self.vec = []
-        # for i in range(0, self.n-1):
-            # {0,1,2,3} =  {n,w,s,e} = {U,R,D,L}
-            # self.vec.append(config.INITIALVEC[i])
         self.vec = array(config.INITIALVEC, int32)
 
         # the 2D coordinates of the chain, as a list of duples 
-        self.coords = self.vec2coords(self.vec)
-        # viable chains are ones which are self-avoiding       
+        self.coords = zeros([len(self.vec)+1,2], int32)
+        self.coords = self.vec2coords(self.vec, self.coords)
+        # viable chains are ones which are self-avoiding
+        # 1 if viable, 0 if not       
         self.viable = self.viability(self.coords)     	
-        # 1 if viable, 0 if not
-
+        
         # Initialize the vec, coords, and viable of any
         #  **proposed** new conformation.
         # Having these variables is convenient for use with
         # Monte Carlo algorithms, e.g.
-
-        # self.nextvec = []
-        # for i in range(0, len(self.vec)):
-            # self.nextvec.append(self.vec[i])
         self.nextvec = self.vec.copy()
-
-        # self.nextcoords = []
-        # for i in range(0, len(self.coords)):
-        #     self.nextcoords.append(self.coords[i])
         self.nextcoords = self.coords.copy()
-
         self.nextviable = self.viable
 
     def hpstr2bin(self):
@@ -91,9 +80,8 @@ class Chain:
                 binseq.append(0)
         return binseq
 
-    def vec2coords(self, vec):
-        c = fast_vec2coords( vec, zeros([len(vec),2], int32) )
-        # return c.tolist()
+    def vec2coords(self, vec, coords):
+        c = fast_vec2coords(vec, coords)
         return c
 
     def viability(self, thesecoords):
@@ -105,22 +93,13 @@ class Chain:
             if coords.count(c) > 1:
                 self.viable = 0
                 break
-        # for idx, this_row in enumerate(thesecoords):
-        #     if any((this_row == x).all() for x in thesecoords[idx+1:,:]):
-        #         self.viable = 0
-        #         break
-        # return self.viable
-        # d = pdist(thesecoords)
-        # is_overlapping = (d == 0.0).any()
-        # is_viable = (is_overlapping is False)
-        # self.viable = is_viable
-        # return self.viable
+        return self.viable
 
     def contactstate(self):
         """Return the contact state of the chain as a list of
            (res1,res2) contacts (tuples),
            where the residue numbering starts at 0."""
-        self.coords = self.vec2coords(self.vec)
+        self.coords = self.vec2coords(self.vec, self.coords)
         contactstate = []
         for c in range(0, len(self.coords)-1):
             for d in range((c+3), len(self.coords)):

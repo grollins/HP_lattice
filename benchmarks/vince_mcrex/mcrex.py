@@ -2,13 +2,12 @@
 
 import sys
 sys.path.append('../')
-from timer import Timer
-
 from os.path import join
 from random import Random
 from string import strip
 from math import exp
 
+from timer import Timer
 from hplattice.Config import Config
 from hplattice.Monty import randseed
 from hplattice.Replica import Replica
