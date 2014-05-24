@@ -1,5 +1,5 @@
 from numba import jit, i4
-from numpy import array, zeros, int32, nonzero
+from numpy import array, zeros, int32, nonzero, r_
 
 
 def vec2coords(chain_vecs, coords):
@@ -111,26 +111,16 @@ class Chain:
         return contactstate 
 
     def grow(self):
-        """Add a new link onto the chain vector, updating the coords and viability correspondingly."""
-
+        """
+        Add a new link onto the chain vector,
+        updating the coords and viability correspondingly.
+        """
         # Add a "0" onto the vec chain...
-        self.vec.append(0)
+        self.vec = r_[self.vec, 0]
         # ... update the coords
-        i = len(self.coords) - 1 
-        last_coord = self.coords[i]
-        app_coord = (last_coord[0],last_coord[1]+1)
-        self.coords.append(app_coord) 
-
+        self.coords = self.vec2coords(self.vec, self.coords)
         # ... update the viability
-        if self.coords.count(app_coord) > 1:
-            self.viable = 0
-   
-    def lastvec(self):
-        """Report the last entry on the list."""
-        if len(self.vec) == 0:
-            return(None)
-        else:
-            return self.vec[-1]
+        self.viability(self.coords)
 
     def shift(self):
         """Shifts the chain vector to the 'next' list, according to an
@@ -155,56 +145,67 @@ class Chain:
             3's, the search is done
             returns 0 otherwise
         """
-    
+
+        vec = self.vec.tolist()
+        coords = [(row[0], row[1]) for row in self.coords]
+
         # pop off all the trailing 3's		
-        while self.lastvec() == 3:
-            self.vec.pop() # update vec
-            self.coords.pop() # update coords
+        while 1:
+            if len(vec) > 0 and vec[-1] == 3:
+                vec.pop() # update vec
+                coords.pop() # update coords
+            else:
+                break
 
         ### update viability	
         self.viable = 1
-        for c in self.coords:
-            if self.coords.count(c) > 1:
+        for c in coords:
+            if coords.count(c) > 1:
                 self.viable = 0
 
         ## if popping of all the '3's left an empty vec list, then we're done!
-        if len(self.vec) == 0:
+        if len(vec) == 0:
             self.viable = 0
+            self.vec = array(vec, int32)
+            self.coords = self.vec2coords(self.vec, self.coords)
             return(1)
 
-        i = len(self.vec) - 1 # the last vec index
+        i = len(vec) - 1 # the last vec index
 
         # Otherwise, increment the remaining non-"3" elements
-        if self.vec[i] == 0:
+        if vec[i] == 0:
             # update vec 
-            self.vec[i] = self.vec[i] + 1
+            vec[i] = vec[i] + 1
             # update coords: rotate "up" to "right"
-            self.coords[i+1] = (self.coords[i+1][0] + 1, self.coords[i+1][1] - 1)
+            coords[i+1] = (coords[i+1][0] + 1, coords[i+1][1] - 1)
             # update viability
             self.viable = 1
-            if self.coords.count(self.coords[i+1]) > 1:
+            if coords.count(coords[i+1]) > 1:
                 self.viable = 0
 
-        elif self.vec[i] == 1:
+        elif vec[i] == 1:
             # update vec
-            self.vec[i] = self.vec[i] + 1
+            vec[i] = vec[i] + 1
             # update coords: rotate "right" to "down"
-            self.coords[i+1] = (self.coords[i+1][0] - 1, self.coords[i+1][1] - 1)
+            coords[i+1] = (coords[i+1][0] - 1, coords[i+1][1] - 1)
             # update viability
             self.viable = 1
-            if self.coords.count(self.coords[i+1]) > 1:
+            if coords.count(coords[i+1]) > 1:
                 self.viable = 0
 
         else:
             # i.e. self.vec[i] == 2:
             # update vec
-            self.vec[i] = self.vec[i] + 1
+            vec[i] = vec[i] + 1
             # update coords: rotate "down" to "left"
-            self.coords[i+1] = (self.coords[i+1][0] - 1, self.coords[i+1][1] + 1)
+            coords[i+1] = (coords[i+1][0] - 1, coords[i+1][1] + 1)
             # update viability
             self.viable = 1
-            if self.coords.count(self.coords[i+1]) > 1:
+            if coords.count(coords[i+1]) > 1:
                 self.viable = 0
+        
+        self.vec = array(vec, int32)
+        self.coords = self.vec2coords(self.vec, self.coords)
         return(0)
 
     def nonsym(self):
