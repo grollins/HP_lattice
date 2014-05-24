@@ -1,26 +1,6 @@
 from random import Random, random
 from math import floor, exp
 from numpy import array, int32
-from numba import jit, i4
-
-randseed = 422
-
-
-def count_H_contacts(coords, hpstring):
-    num_contacts = 0
-    for c in range(0, len(coords)-1):
-        # for coordinates, except last one
-        for d in range((c+3), len(coords)):
-            # for all beads at least three ahead of this one
-            # if c in H_inds and d in H_inds:
-            if hpstring[c] == 'H' and hpstring[d] == 'H':
-                this_dist = (abs(coords[c][0]-coords[d][0]) + \
-                             abs(coords[c][1]-coords[d][1]))
-                if this_dist == 1:
-                    # and they're next to each other
-                    num_contacts += 1
-    return num_contacts
-fast_count_H_contacts = jit(i4(i4[:,:]))(count_H_contacts)
 
 
 class Monty:
@@ -52,11 +32,11 @@ class Monty:
         self.restraint = DistRestraint(config.RESTRAINED_STATE, config.KSPRING)
         self.lastenergy = self.energy(chain) + self.restraint.energy(chain)
 
-    def _do_rigid_rot(self, vecindex, direction, replica):
-        replica.chain.nextvec[vecindex:] = \
-            (replica.chain.nextvec[vecindex:] + direction) % 4
+    def _do_rigid_rot(self, vecindex, direction, chain):
+        chain.nextvec[vecindex:] = \
+            (chain.nextvec[vecindex:] + direction) % 4
 
-    def move1(self, replica):
+    def move1(self, chain):
         """Apply moveset 'MC1' to the chain:
            (i)  three-bead flips
            (ii) end flips
@@ -64,27 +44,27 @@ class Monty:
         """
         r = random()
         s = random()
-        vecindex = int(floor((replica.chain.n - 1.0001)*r))
+        vecindex = int(floor((chain.n - 1.0001)*r))
         if s < 0.5:
             direction = 1
         else:
             direction = -1      
  
         ### if the vec index is on the end, do an end flip
-        if (vecindex == 0) | (vecindex == len(replica.chain.nextvec)-1):
-            replica.chain.nextvec[vecindex] = (replica.chain.nextvec[vecindex] + direction) % 4
+        if (vecindex == 0) | (vecindex == len(chain.nextvec)-1):
+            chain.nextvec[vecindex] = (chain.nextvec[vecindex] + direction) % 4
         ### else, do a three-bead flip, i.e. switch two adjacent {n,e,w,s} directions
         else:
-            tmp = replica.chain.nextvec[vecindex] 
-            replica.chain.nextvec[vecindex] = replica.chain.nextvec[vecindex+1]
-            replica.chain.nextvec[vecindex + 1] = tmp
+            tmp = chain.nextvec[vecindex] 
+            chain.nextvec[vecindex] = chain.nextvec[vecindex+1]
+            chain.nextvec[vecindex + 1] = tmp
 
-        replica.chain.nextcoords = \
-            replica.chain.vec2coords(replica.chain.nextvec, replica.chain.nextcoords)
-        replica.chain.nextviable = \
-            replica.chain.viability(replica.chain.nextcoords)
+        chain.nextcoords = \
+            chain.vec2coords(chain.nextvec, chain.nextcoords)
+        chain.nextviable = \
+            chain.viability(chain.nextcoords)
 
-    def move2(self, replica):
+    def move2(self, chain):
         """
         Apply moveset MC2 to the chain:
         (i)   three-bead flips
@@ -96,7 +76,7 @@ class Monty:
         r = random()
         s = random()
         t = random()    
-        vecindex = int(floor((replica.chain.n - 1.0001)*r))
+        vecindex = int(floor((chain.n - 1.0001)*r))
         
         if s < 0.5:
             direction = 1      
@@ -105,39 +85,39 @@ class Monty:
 
         # if possible, 1/3 of the time do a three-bead flip
         # (dirs must be different)
-        if (t < 0.33333) and (vecindex < len(replica.chain.nextvec)-1):
-            tmp1 = replica.chain.nextvec[vecindex] 
-            tmp2 = replica.chain.nextvec[vecindex+1]
+        if (t < 0.33333) and (vecindex < len(chain.nextvec)-1):
+            tmp1 = chain.nextvec[vecindex] 
+            tmp2 = chain.nextvec[vecindex+1]
             if (tmp1 != tmp2):
-                replica.chain.nextvec[vecindex] = tmp2 
-                replica.chain.nextvec[vecindex + 1] = tmp1
+                chain.nextvec[vecindex] = tmp2 
+                chain.nextvec[vecindex + 1] = tmp1
             else: 
                 # default: do a rigid rotation
-                self._do_rigid_rot(vecindex, direction, replica)
+                self._do_rigid_rot(vecindex, direction, chain)
 
         # if possible, 1/3 of the time do a crankshft
         # (1st and 3rd dirs must be different)
-        elif (t < 0.66666) and (vecindex < len(replica.chain.nextvec)-2):
-            tmp1 = replica.chain.nextvec[vecindex] 
-            tmp2 = replica.chain.nextvec[vecindex+2]
+        elif (t < 0.66666) and (vecindex < len(chain.nextvec)-2):
+            tmp1 = chain.nextvec[vecindex] 
+            tmp2 = chain.nextvec[vecindex+2]
             if (t < 0.66666) and (tmp1 != tmp2):
                 ### crankshaft move
-                replica.chain.nextvec[vecindex] = tmp2 
-                replica.chain.nextvec[vecindex + 2] = tmp1
+                chain.nextvec[vecindex] = tmp2 
+                chain.nextvec[vecindex + 2] = tmp1
             else: 
                 # default: do a rigid rotation
-                self._do_rigid_rot(vecindex, direction, replica)
+                self._do_rigid_rot(vecindex, direction, chain)
 
         else: 
             # default: do a rigid rotation
-            self._do_rigid_rot(vecindex, direction, replica)
+            self._do_rigid_rot(vecindex, direction, chain)
 
-        replica.chain.nextcoords = \
-            replica.chain.vec2coords(replica.chain.nextvec, replica.chain.nextcoords)
-        replica.chain.nextviable = \
-            replica.chain.viability(replica.chain.nextcoords)
+        chain.nextcoords = \
+            chain.vec2coords(chain.nextvec, chain.nextcoords)
+        chain.nextviable = \
+            chain.viability(chain.nextcoords)
 
-    def move3(self,replica):
+    def move3(self, chain):
         """
         Apply moveset 'MC3' to the chain.
         This is just a simple set to change the direction of
@@ -150,21 +130,21 @@ class Monty:
     
         r = self.random.random()
         s = self.random.random()
-        vecindex = int(floor((replica.chain.n - 1.0001)*r))
+        vecindex = int(floor((chain.n - 1.0001)*r))
 
         if s < 0.5:
             direction = 1
         else:
             direction = -1      
   
-        replica.chain.nextvec[vecindex] = \
-            (replica.chain.nextvec[vecindex] + direction) % 4
-        replica.chain.nextcoords = \
-            replica.chain.vec2coords(replica.chain.nextvec, replica.chain.nextcoords)
-        replica.chain.nextviable = \
-            replica.chain.viability(replica.chain.nextcoords)
+        chain.nextvec[vecindex] = \
+            (chain.nextvec[vecindex] + direction) % 4
+        chain.nextcoords = \
+            chain.vec2coords(chain.nextvec, chain.nextcoords)
+        chain.nextviable = \
+            chain.viability(chain.nextcoords)
 
-    def move4(self,replica):
+    def move4(self, chain):
         """
         Apply moveset 'MC4' to the chain:
         This is another vert simple moveset, to just change one angle
@@ -173,7 +153,7 @@ class Monty:
         """
         r = self.g.random()
         s = self.g.random()
-        vecindex = int(floor((replica.chain.n - 1.0001)*r))
+        vecindex = int(floor((chain.n - 1.0001)*r))
 
         if s < 0.5:
             direction = 1
@@ -183,10 +163,10 @@ class Monty:
         ### a rigid rotation
         self._do_rigid_rot(vecindex, direction, replica)
 
-        replica.chain.nextcoords = \
-            replica.chain.vec2coords(replica.chain.nextvec, replica.chain.nextcoords)
-        replica.chain.nextviable = \
-            replica.chain.viability(replica.chain.nextcoords)
+        chain.nextcoords = \
+            chain.vec2coords(chain.nextvec, chain.nextcoords)
+        chain.nextviable = \
+            chain.viability(chain.nextcoords)
 
     def metropolis(self, replica):
         """
@@ -217,8 +197,6 @@ class Monty:
 
     def energy(self, chain):
         """Calculate potential energy of the chain."""
-        # H_inds = array(H_inds, int32)
-        # num_contacts = fast_count_H_contacts(chain.coords, chain.hpstring)
         num_contacts = 0.0
         for i, this_H_idx in enumerate(self.H_inds):
             for other_H_idx in self.H_inds[i+1:]:
@@ -226,20 +204,7 @@ class Monty:
                     this_dist = (abs(chain.coords[this_H_idx][0]-chain.coords[other_H_idx][0]) + \
                                  abs(chain.coords[this_H_idx][1]-chain.coords[other_H_idx][1]))
                     if this_dist == 1:
-                        # and they're next to each other
                         num_contacts += 1
-
-        # for c in range(0, len(chain.coords)-1):
-        #     # for coordinates, except last one
-        #     for d in range((c+3), len(chain.coords)):
-        #         # for all beads at least three ahead of this one
-        #         if chain.hpstring[c] == 'H' and chain.hpstring[d] == 'H':
-        #             # if this is an H pair
-        #             this_dist = (abs(chain.coords[c][0]-chain.coords[d][0]) + \
-        #                          abs(chain.coords[c][1]-chain.coords[d][1]))
-        #             if this_dist == 1:
-        #                 # and they're next to each other
-        #                 num_contacts += 1
         return num_contacts * self.epsilon
 
 
