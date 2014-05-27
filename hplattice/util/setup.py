@@ -4,9 +4,6 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
-from Scientific import N
-assert N.package == "NumPy"
-
 compile_args = []
 include_dirs = ['.',]
 
