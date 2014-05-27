@@ -22,8 +22,15 @@ else:
     )
 
 extensions = [Extension("vec2coords", ["vec2coords.pyx"],
-                extra_compile_args=compile_args,
-                include_dirs=include_dirs)]
+                        extra_compile_args=compile_args,
+                        include_dirs=include_dirs),
+              Extension("viability", ["viability.pyx"],
+                        extra_compile_args=compile_args,
+                        include_dirs=include_dirs),
+              Extension("energy", ["energy.pyx"],
+                        extra_compile_args=compile_args,
+                        include_dirs=include_dirs)
+              ]
 
 setup(
     cmdclass={'build_ext': build_ext},

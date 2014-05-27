@@ -1,6 +1,6 @@
 from numba import jit, i4
 from numpy import array, zeros, int32, nonzero, r_
-from .util import vec2coords
+from .util import vec2coords, check_viability
 
 
 class Chain:
@@ -64,15 +64,16 @@ class Chain:
         return c
 
     def viability(self, thesecoords):
-        """Return 1 if the chain coordinates are self-avoiding,
-           0 if not."""
-        self.viable = 1
-        coords = [(row[0], row[1]) for row in thesecoords]
-        for c in coords:
-            if coords.count(c) > 1:
-                self.viable = 0
-                break
-        return self.viable
+        # """Return 1 if the chain coordinates are self-avoiding,
+        #    0 if not."""
+        # self.viable = 1
+        # coords = [(row[0], row[1]) for row in thesecoords]
+        # for c in coords:
+        #     if coords.count(c) > 1:
+        #         self.viable = 0
+        #         break
+        # return self.viable
+        return check_viability(thesecoords)
 
     def contactstate(self):
         """Return the contact state of the chain as a list of

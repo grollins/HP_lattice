@@ -1,6 +1,7 @@
 from random import random
 from math import floor, exp
 from numpy import array, int32
+from util import compute_energy
 
 
 class Monty:
@@ -11,7 +12,8 @@ class Monty:
         """Initialize the Monte Carlo object..."""
         print '\tcreating Monty.py object....'
         # indices of hydrophic beads
-        self.H_inds = [idx for idx, bead in enumerate(chain.hpstring) if bead == 'H']
+        H_inds = [idx for idx, bead in enumerate(chain.hpstring) if bead == 'H']
+        self.H_inds = array(H_inds, int32)
 
         # The names of the available Monte Carlo movesets
         self.movesets = ['MC1','MC2','MC3','MC4']
@@ -192,16 +194,17 @@ class Monty:
         replica.chain.viable = replica.chain.nextviable
 
     def energy(self, chain):
-        """Calculate potential energy of the chain."""
-        num_contacts = 0.0
-        for i, this_H_idx in enumerate(self.H_inds):
-            for other_H_idx in self.H_inds[i+1:]:
-                if (other_H_idx - this_H_idx) >= 3:
-                    this_dist = (abs(chain.coords[this_H_idx][0]-chain.coords[other_H_idx][0]) + \
-                                 abs(chain.coords[this_H_idx][1]-chain.coords[other_H_idx][1]))
-                    if this_dist == 1:
-                        num_contacts += 1
-        return num_contacts * self.epsilon
+        # """Calculate potential energy of the chain."""
+        # num_contacts = 0.0
+        # for i, this_H_idx in enumerate(self.H_inds):
+        #     for other_H_idx in self.H_inds[i+1:]:
+        #         if (other_H_idx - this_H_idx) >= 3:
+        #             this_dist = (abs(chain.coords[this_H_idx][0]-chain.coords[other_H_idx][0]) + \
+        #                          abs(chain.coords[this_H_idx][1]-chain.coords[other_H_idx][1]))
+        #             if this_dist == 1:
+        #                 num_contacts += 1
+        # return num_contacts * self.epsilon
+        return compute_energy(self.epsilon, chain.coords, self.H_inds)
 
 
 class DistRestraint:

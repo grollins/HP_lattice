@@ -6,8 +6,8 @@ Summary: A toolkit for the two-dimensional HP lattice model of proteins of Chan 
 Library:
     Packages: hplattice, hplattice.util
 
-DataFiles: vec
-    Files: hplattice/util/vec2coords.*
+DataFiles: util
+    Files: hplattice/util/vec2coords.*, hplattice/util/viability.*, hplattice/util/energy.*
 
 ExtraSourceFiles:
     LICENSE,
