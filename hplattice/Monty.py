@@ -1,4 +1,4 @@
-from random import Random, random
+from random import random
 from math import floor, exp
 from numpy import array, int32
 
@@ -10,10 +10,6 @@ class Monty:
     def __init__(self, config, temp, chain):
         """Initialize the Monte Carlo object..."""
         print '\tcreating Monty.py object....'
-        # NOTE: random.Random is an object that
-        #  needs an integer seed for initialization
-        self.g = Random(config.randseed)
-        
         # indices of hydrophic beads
         self.H_inds = [idx for idx, bead in enumerate(chain.hpstring) if bead == 'H']
 
@@ -151,8 +147,8 @@ class Monty:
         in a rigid rotation.
         Like 'MS3', this generates about 5% viable moves.
         """
-        r = self.g.random()
-        s = self.g.random()
+        r = random()
+        s = random()
         vecindex = int(floor((chain.n - 1.0001)*r))
 
         if s < 0.5:
@@ -173,7 +169,7 @@ class Monty:
         Accept Chain.nextvec over Chain.vec according to a Metropolis
         criterion.
         """
-        randnum = self.g.random()
+        randnum = random()
 
         # accept with Metroplis criterion
         thisenergy = self.energy(replica.chain) + \

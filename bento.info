@@ -4,7 +4,10 @@ Author: Geoff Rollins
 Summary: A toolkit for the two-dimensional HP lattice model of proteins of Chan and Dill
 
 Library:
-    Packages: hplattice
+    Packages: hplattice, hplattice.util
+
+DataFiles: vec
+    Files: hplattice/util/vec2coords.*
 
 ExtraSourceFiles:
     LICENSE,

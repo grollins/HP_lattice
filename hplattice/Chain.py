@@ -1,27 +1,6 @@
 from numba import jit, i4
 from numpy import array, zeros, int32, nonzero, r_
-
-
-def vec2coords(chain_vecs, coords):
-    """Convert an array of chain vectors to a 2d array of
-       coordinates."""
-    x = 0
-    y = 0
-    coords[0,0] = x
-    coords[0,1] = y
-    for i in range(0, len(chain_vecs)):
-        if chain_vecs[i] == 0:
-            y = y + 1
-        if chain_vecs[i] == 1:
-            x = x + 1
-        if chain_vecs[i] == 2:
-            y = y - 1
-        if chain_vecs[i] == 3:
-            x = x - 1
-        coords[i+1,0] = x
-        coords[i+1,1] = y
-    return coords
-fast_vec2coords = jit(i4[:,:](i4[:],i4[:,:]))(vec2coords)
+from .util import vec2coords
 
 
 class Chain:
@@ -81,7 +60,7 @@ class Chain:
         return binseq
 
     def vec2coords(self, vec, coords):
-        c = fast_vec2coords(vec, coords)
+        c = vec2coords(vec, coords)
         return c
 
     def viability(self, thesecoords):
