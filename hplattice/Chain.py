@@ -1,5 +1,4 @@
-from numba import jit, i4
-from numpy import array, zeros, int32, nonzero, r_
+from numpy import array, zeros, int32, nonzero, r_, append
 from .util import vec2coords, check_viability
 
 
@@ -72,8 +71,8 @@ class Chain:
         #     if coords.count(c) > 1:
         #         self.viable = 0
         #         break
-        # return self.viable
-        return check_viability(thesecoords)
+        self.viable = check_viability(thesecoords)
+        return self.viable
 
     def contactstate(self):
         """Return the contact state of the chain as a list of
@@ -98,7 +97,10 @@ class Chain:
         # Add a "0" onto the vec chain...
         self.vec = r_[self.vec, 0]
         # ... update the coords
-        self.coords = self.vec2coords(self.vec, self.coords)
+        i = len(self.coords) - 1
+        last_coord = self.coords[i,:]
+        app_coord = array([[last_coord[0], last_coord[1]+1],], dtype=int32)
+        self.coords = append(self.coords, app_coord, axis=0)
         # ... update the viability
         self.viability(self.coords)
 
@@ -134,6 +136,7 @@ class Chain:
             if len(vec) > 0 and vec[-1] == 3:
                 vec.pop() # update vec
                 coords.pop() # update coords
+                self.coords = self.coords[:-1,:]
             else:
                 break
 
