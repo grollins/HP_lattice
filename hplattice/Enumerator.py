@@ -22,10 +22,10 @@ class Enumerator(object):
         # NOTE: in order for this to work correctly, the initial starting
         # vector must be [0,0,0,....,0]
         # 
-        done = 0
-        while not(done):
-            if len(self.chain.vec) == self.chain.n - 1:    
-                if self.chain.viable:                
+        done = False
+        while not done:
+            if len(self.chain.vec) == (self.chain.n - 1):
+                if self.chain.is_viabile():
                     if self.chain.nonsym():
                         # tally the number of contacts
                         state = self.chain.contactstate()
@@ -47,17 +47,17 @@ class Enumerator(object):
                         nconfs = nconfs + 1
 
                     done = self.chain.shift()
-                        
+
                 else:
                     done = self.chain.shift()
 
             else:
-                if self.chain.viable:
+                if self.chain.is_viabile():
                     self.chain.grow()
                 else:
                     done = self.chain.shift()
 
-            if self.chain.vec[0] == 1:
+            if self.chain.is_first_vec_one():
                 # skip the other symmetries
                 break        
         #
