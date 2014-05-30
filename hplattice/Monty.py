@@ -1,7 +1,8 @@
 from random import random
 from math import floor, exp
 from numpy import array, int32
-from util import compute_energy
+
+from .util import compute_energy
 
 
 class Monty:

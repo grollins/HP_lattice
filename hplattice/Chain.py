@@ -1,5 +1,6 @@
 from numpy import array, zeros, int32, nonzero, r_, append, sqrt, sum
-from .util import vec2coords, check_viability
+from .util import vec2coords, check_viability, compute_energy, is_nonsym, \
+                  do_shift
 
 
 DTYPE = int32
@@ -21,6 +22,9 @@ class Chain:
 
         def __str__(self):
             return str(self.vec)
+
+        def set(self, vec):
+            self.vec = vec
 
         def get(self, idx):
             return self.vec[idx]
@@ -49,8 +53,14 @@ class Chain:
         def __str__(self):
             return str(self.coords)
 
+        def set(self, coords):
+            self.coords = coords
+
         def vec2coords(self, vec):
             self.coords = vec2coords(vec.as_npy_array(), self.coords)
+
+        def as_npy_array(self):
+            return self.coords
 
         def is_viable(self):
             return check_viability(self.coords)
@@ -88,6 +98,9 @@ class Chain:
         # The HP seq in binary rep (H=1 P=0)
         self.hpbinary = self.hpstr2bin()
         
+        H_inds = [idx for idx, bead in enumerate(self.hpstring) if bead == 'H']
+        self.H_inds = array(H_inds, int32)
+
         # The chain is represented by an (n-1)-dimensional vector,
         #  which is stored in a python list.
         # Each element represents the direction of successive links
@@ -149,6 +162,9 @@ class Chain:
                     contactstate.append((c,d))
         return contactstate 
 
+    def energy(self):
+        return compute_energy(0., self.coords.as_npy_array(), self.H_inds)
+
     def grow(self):
         """
         Add a new link onto the chain vector,
@@ -182,6 +198,7 @@ class Chain:
             3's, the search is done
             returns 0 otherwise
         """
+        
         # pop off all the trailing 3's		
         while 1:
             if len(self.vec) > 0 and self.vec.get(-1) == 3:
@@ -190,60 +207,11 @@ class Chain:
             else:
                 break
 
-        ### update viability	
-        # self.viable = 1
-        # for c in coords:
-        #     if coords.count(c) > 1:
-        #         self.viable = 0
-
-        ## if popping of all the '3's left an empty vec list, then we're done!
-        if len(self.vec) == 0:
-            # self.viable = 0
-            # self.vec = array(vec, int32)
-            # self.vec2coords(self.vec, self.coords)
-            return True
-
-        i = len(self.vec) - 1 # the last vec index
-
-        # Otherwise, increment the remaining non-"3" elements
-        if self.vec.get(i) == 0:
-            # update vec 
-            self.vec.increment(i)
-            # update coords: rotate "up" to "right"
-            # coords[i+1] = (coords[i+1][0] + 1, coords[i+1][1] - 1)
-            self.coords.rotate_up_to_right(i+1)
-            # update viability
-            # self.viable = 1
-            # if coords.count(coords[i+1]) > 1:
-                # self.viable = 0
-                # pass
-
-        elif self.vec.get(i) == 1:
-            # update vec
-            self.vec.increment(i)
-            # update coords: rotate "right" to "down"
-            # coords[i+1] = (coords[i+1][0] - 1, coords[i+1][1] - 1)
-            self.coords.rotate_right_to_down(i+1)
-            # update viability
-            # self.viable = 1
-            # if coords.count(coords[i+1]) > 1:
-                # self.viable = 0
-
-        else:
-            # i.e. self.vec[i] == 2:
-            # update vec
-            self.vec.increment(i)
-            # update coords: rotate "down" to "left"
-            # coords[i+1] = (coords[i+1][0] - 1, coords[i+1][1] + 1)
-            self.coords.rotate_down_to_left(i+1)
-            # update viability
-            # self.viable = 1
-            # if coords.count(coords[i+1]) > 1:
-                # self.viable = 0
-        
-        # self.vec = array(vec, int32)
-        self.coords.vec2coords(self.vec)
-        return False
+        is_done, vec, coords = \
+            do_shift(self.vec.as_npy_array(), self.coords.as_npy_array())
+        self.vec.set(vec)
+        self.coords.set(coords)
+        return is_done
 
     def nonsym(self):
         """Many of the conformations are related by rotations and reflections.
@@ -251,17 +219,7 @@ class Chain:
            direction '0' and the first turn be a '1' (right turn)
            nonsym() returns 1 if the vec list is non-symmetric, 0 otherwise
         """
-        if len(self.vec) > 0:
-            # walk along chain until you get to the first non '0' vec:
-            i = 0
-            v = self.vec.get(0)
-            while (v == 0) and (i < (len(self.vec) - 1)):
-                i = i + 1
-                v = self.vec.get(i)
-            if self.vec.get(0) == 0:
-                if (v == 1) or (v == 0):
-                    return 1
-        return 0
+        return is_nonsym( self.vec.as_npy_array() )
 
     def is_first_vec_one(self):
         return (self.vec.get(0) == 1)

@@ -1,4 +1,5 @@
-from hplattice.Chain import Chain
+from .Chain import Chain
+
 
 class Enumerator(object):
     """docstring for Enumerator"""
@@ -24,11 +25,13 @@ class Enumerator(object):
         # 
         done = False
         while not done:
+            # print self.chain
             if len(self.chain.vec) == (self.chain.n - 1):
                 if self.chain.is_viable():
                     if self.chain.nonsym():
                         # tally the number of contacts
-                        state = self.chain.contactstate()
+                        # state = self.chain.contactstate()
+                        E, state = self.chain.energy()
                         ncontacts = len(state)
                         if contacts.has_key(ncontacts) == False:
                             contacts[ncontacts] = 1
