@@ -134,7 +134,7 @@ class Chain:
     def vec2coords(self, vec, coords):
         self.coords.vec2coords(vec)
 
-    def is_viabile(self):
+    def is_viable(self):
         return self.coords.is_viable()
 
     def contactstate(self):

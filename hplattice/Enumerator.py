@@ -25,7 +25,7 @@ class Enumerator(object):
         done = False
         while not done:
             if len(self.chain.vec) == (self.chain.n - 1):
-                if self.chain.is_viabile():
+                if self.chain.is_viable():
                     if self.chain.nonsym():
                         # tally the number of contacts
                         state = self.chain.contactstate()
@@ -52,7 +52,7 @@ class Enumerator(object):
                     done = self.chain.shift()
 
             else:
-                if self.chain.is_viabile():
+                if self.chain.is_viable():
                     self.chain.grow()
                 else:
                     done = self.chain.shift()
