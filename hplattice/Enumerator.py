@@ -1,4 +1,5 @@
 from .Chain import Chain
+from .Trajectory import Trajectory
 
 
 class Enumerator(object):
@@ -8,12 +9,14 @@ class Enumerator(object):
         self.verbose = verbose
         self.chain = Chain(self.config)
 
-    def enumerate_states(self):
+    def enumerate_states(self, save_trajectory=False, trajectory_filename='traj.xyz'):
         nconfs = 0
         # dictionary of {repr{contact state}: number of conformations}
         contact_states = {}
         # dictionary of {number of contacts: number of conformations}
         contacts = {}
+
+        traj = Trajectory(save_trajectory, trajectory_filename)
 
         #################
         #
@@ -48,6 +51,8 @@ class Enumerator(object):
 
                         # tally the number of conformations
                         nconfs = nconfs + 1
+                        # save configuration
+                        traj.snapshot(self.chain)
 
                     done = self.chain.shift()
 
@@ -85,3 +90,5 @@ class Enumerator(object):
                 (num_contacts, self.config.eps * num_contacts, num_confs)
         print
         print 'at T = %4.1f K' % self.config.T
+
+        traj.finalize()

@@ -223,3 +223,9 @@ class Chain:
 
     def is_first_vec_one(self):
         return (self.vec.get(0) == 1)
+
+    def get_coord_array(self):
+        return self.coords.as_npy_array()
+
+    def get_hp_string(self):
+        return self.hpstring
