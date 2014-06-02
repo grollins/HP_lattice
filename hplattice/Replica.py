@@ -73,9 +73,14 @@ class Replica:
         return self.mc.metropolis(self)
 
     def is_native(self):
-        thisclist = self.chain.contactstate()
-        return (self.nativeclist == thisclist)
+        this_contact_list = self.contactstate()
+        return (self.nativeclist == this_contact_list)
 
+    def contactstate(self):
+        return self.chain.contactstate()
+
+    def get_vec(self):
+        return self.chain.vec
 
 def attemptswap(swap_method, replicas):
     N = len(replicas)

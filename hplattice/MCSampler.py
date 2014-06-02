@@ -11,18 +11,19 @@ class MCSampler(object):
     def __init__(self, config, verbose=False):
         self.config = config
         self.verbose = verbose
-        native_contacts = self._load_native_contacts()
+        self.native_contacts = self._load_native_contacts()
         self.replicas = []
         for i in range(0, self.config.NREPLICAS):
-            self.replicas.append( Replica(self.config, i, native_contacts) )
+            self.replicas.append( Replica(self.config, i, self.native_contacts) )
 
     def _load_native_contacts(self):
         if self.config.STOPATNATIVE == 1:
             nativeclistfile = self.config.NATIVEDIR + '/' + self.config.HPSTRING + '.clist'
             with open(nativeclistfile,'r') as fnative:
-                nativeclist = fnative.readline()
+                nativeclist_str = fnative.readline()
+                nativeclist = eval(nativeclist_str)
             if self.verbose:
-                print 'NATIVE CLIST:',nativeclist
+                print 'NATIVE CLIST:', nativeclist
         else:
             nativeclist = None
         return nativeclist
@@ -50,6 +51,25 @@ class MCSampler(object):
         inds = nonzero(self.swaps)
         self.swap_acceptance[inds] = \
             (1.*self.viable_swaps[inds]) / self.swaps[inds]
+
+    def _output_stats(self, prodstep):
+        # Output the status of the simulation
+        print prodstep, 'production steps'
+        print '%-12s %-12s %-12s %-12s %-12s %-12s %-12s ' % \
+              ('replica','viablesteps','steps','MCaccept','viableswaps',
+               'swaps','SWAPaccept')
+        for idx, rep in enumerate(self.replicas):
+            print '%-12d %-12d %-12d %-12s %-12d %-12d %-12s' % \
+                (idx, rep.viablesteps, rep.steps,
+                 '%1.3f' % rep.acceptance, self.swaps[idx],
+                 self.viable_swaps[idx], '%1.3f' % self.swap_acceptance[idx])
+        if self.config.STOPATNATIVE == 1:
+            print 'NATIVE CLIST:', self.native_contacts
+        print '%-8s %-12s %-12s' % \
+            ('replica', 'foundnative', 'contact state') 
+        for rep in self.replicas:
+            print '%-8d %-12d %s %s' % \
+                (rep.repnum, rep.is_native(), rep.contactstate(), rep.get_vec())
 
     def do_mc_sampling(self):
         self._init_mc_stats()
@@ -84,46 +104,6 @@ class MCSampler(object):
                     r.compute_mc_acceptance()       
                 # calc replica swap acceptance
                 self._compute_swap_acceptance()
+                self._output_stats(prodstep)
 
-                # Output the status of the simulation
-                '''
-                print prodstep, 'production steps'
-                print '%-12s %-12s %-12s %-12s %-12s %-12s %-12s ' % \
-                      ('replica','viablesteps','steps','MCaccept','viableswaps',
-                       'swaps','SWAPaccept')
-                for rep in range(0, len(steps)):
-                    print '%-12d %-12d %-12d %-12s %-12d %-12d %-12s ' % \
-                        (rep,viablesteps[rep],steps[rep],
-                         '%1.3f' % moveacceptance[rep], swaps[rep],
-                         viableswaps[rep], '%1.3f' % swap_acceptance[rep])
-                if config.STOPATNATIVE == 1:
-                    print 'NATIVE CLIST:', nativeclist
-                print '%-8s %-12s %-12s' % \
-                    ('replica', 'foundnative', 'contact state') 
-                for replica in replicas:
-                    print '%-8d %-12d %s' % \
-                        (replica.repnum, foundnative,
-                         repr(replica.chain.contactstate()))
-                '''
-
-        #Output the status of the simulation one last time...
-        '''
-        print prodstep, 'production steps'
-        print '%-12s %-12s %-12s %-12s %-12s %-12s %-12s ' % \
-                ('replica','viablesteps','steps','MOVEaccept',
-                 'viableswaps','swaps','SWAPaccept')
-        for rep in range(0, len(steps)):
-            print '%-12d %-12d %-12d %-12s %-12d %-12d %-12s ' % \
-                (rep,viablesteps[rep], steps[rep],
-                 '%1.3f' % moveacceptance[rep],
-                  swaps[rep], viableswaps[rep],
-                  '%1.3f' % swap_acceptance[rep])
-        if config.STOPATNATIVE == 1:
-            print 'NATIVE CLIST:', nativeclist
-        print '%-8s %-12s %-12s' % \
-            ('replica','foundnative','contact state')    
-        for replica in replicas:
-            print '%-8d %-12d %s' % \
-                (replica.repnum,foundnative,repr(replica.chain.contactstate()))
-        '''
-        print "last step was", prodstep
+        self._output_stats(prodstep)

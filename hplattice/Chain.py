@@ -254,7 +254,7 @@ class Chain:
     def do_three_bead_flip(self, vecindex):
         # do flip if vec directions are different
         tmp1 = self.nextvec.get(vecindex) 
-        tmp2 = self.nextvec.get(vecindex+1)
+        tmp2 = self.nextvec.get(vecindex + 1)
         if tmp1 != tmp2:
             self.nextvec.set_idx(vecindex, tmp2)
             self.nextvec.set_idx(vecindex + 1, tmp1)
@@ -262,7 +262,7 @@ class Chain:
     def do_crankshaft(self, vecindex):
         # do crankshaft if vec directions are different
         tmp1 = self.nextvec.get(vecindex)
-        tmp2 = self.nextvec.get(vecindex+2)
+        tmp2 = self.nextvec.get(vecindex + 2)
         if tmp1 != tmp2:
             self.nextvec.set_idx(vecindex, tmp2)
             self.nextvec.set_idx(vecindex + 2, tmp1)
