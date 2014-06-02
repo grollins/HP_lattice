@@ -31,10 +31,6 @@ class Monty:
         self.restraint = DistRestraint(config.RESTRAINED_STATE, config.KSPRING)
         self.lastenergy = self.energy(chain) + self.restraint.energy(chain)
 
-    def _do_rigid_rot(self, vecindex, direction, chain):
-        chain.nextvec[vecindex:] = \
-            (chain.nextvec[vecindex:] + direction) % 4
-
     def move1(self, chain):
         """Apply moveset 'MC1' to the chain:
            (i)  three-bead flips
@@ -82,39 +78,32 @@ class Monty:
         else:
             direction = -1      
 
-        # if possible, 1/3 of the time do a three-bead flip
-        # (dirs must be different)
-        if (t < 0.33333) and (vecindex < len(chain.nextvec)-1):
-            tmp1 = chain.nextvec[vecindex] 
-            tmp2 = chain.nextvec[vecindex+1]
-            if (tmp1 != tmp2):
-                chain.nextvec[vecindex] = tmp2 
-                chain.nextvec[vecindex + 1] = tmp1
-            else: 
-                # default: do a rigid rotation
-                self._do_rigid_rot(vecindex, direction, chain)
+        length_of_nextvec = chain.get_vec_length()
 
-        # if possible, 1/3 of the time do a crankshft
-        # (1st and 3rd dirs must be different)
-        elif (t < 0.66666) and (vecindex < len(chain.nextvec)-2):
-            tmp1 = chain.nextvec[vecindex] 
-            tmp2 = chain.nextvec[vecindex+2]
-            if (t < 0.66666) and (tmp1 != tmp2):
-                ### crankshaft move
-                chain.nextvec[vecindex] = tmp2 
-                chain.nextvec[vecindex + 2] = tmp1
-            else: 
-                # default: do a rigid rotation
-                self._do_rigid_rot(vecindex, direction, chain)
+        # 1/3 of the time do a three-bead flip
+        if (t < 0.33333) and (vecindex < length_of_nextvec-1):
+            flip_successful = chain.do_three_bead_flip(vecindex)
+            if flip_successful:
+                pass
+            else:
+                chain.do_rigid_rot(vecindex, direction)
 
+        # 1/3 of the time do a crankshaft
+        elif (t < 0.66666) and (vecindex < length_of_nextvec-2):
+            crank_successful = chain.do_crankshaft(vecindex)
+            if crank_successful:
+                pass
+            else: 
+                chain.do_rigid_rot(vecindex, direction)
+
+        # 1/3 of the time do a rigid rotation
         else: 
-            # default: do a rigid rotation
-            self._do_rigid_rot(vecindex, direction, chain)
+            chain.do_rigid_rot(vecindex, direction)
 
-        chain.nextcoords = \
-            chain.vec2coords(chain.nextvec, chain.nextcoords)
-        chain.nextviable = \
-            chain.viability(chain.nextcoords)
+        # chain.nextcoords = \
+        #     chain.vec2coords(chain.nextvec, chain.nextcoords)
+        # chain.nextviable = \
+        #     chain.viability(chain.nextcoords)
 
     def move3(self, chain):
         """
@@ -182,30 +171,16 @@ class Monty:
 
         if randnum < boltzfactor:
             # update the chain
-            self._update_chain(replica)
+            replica.chain.update_chain()
             # update the lastenergy
             self.lastenergy = thisenergy
             return 1
         else:
             return 0
 
-    def _update_chain(self, replica):
-        replica.chain.vec[:] = replica.chain.nextvec[:]
-        replica.chain.coords[:,:] = replica.chain.nextcoords[:,:]
-        replica.chain.viable = replica.chain.nextviable
-
     def energy(self, chain):
-        # """Calculate potential energy of the chain."""
-        # num_contacts = 0.0
-        # for i, this_H_idx in enumerate(self.H_inds):
-        #     for other_H_idx in self.H_inds[i+1:]:
-        #         if (other_H_idx - this_H_idx) >= 3:
-        #             this_dist = (abs(chain.coords[this_H_idx][0]-chain.coords[other_H_idx][0]) + \
-        #                          abs(chain.coords[this_H_idx][1]-chain.coords[other_H_idx][1]))
-        #             if this_dist == 1:
-        #                 num_contacts += 1
-        # return num_contacts * self.epsilon
-        return compute_energy(self.epsilon, chain.coords, self.H_inds)
+        E, state = chain.energy(self.epsilon)
+        return E
 
 
 class DistRestraint:
@@ -226,10 +201,11 @@ class DistRestraint:
     def D(self, chain):
         """Return the sum of squared-distances over the selected contacts."""
         D = 0.0
+        coords = chain.get_coord_array()
         for i in range(0, len(self.contacts)):
             # print 'contact', i, self.contacts[i], chain.coords
             c = self.contacts[i][0]
             d = self.contacts[i][1]
-            D = D + (chain.coords[c][0]-chain.coords[d][0])**2
-            D = D + (chain.coords[c][1]-chain.coords[d][1])**2
+            D = D + (coords[c][0]-coords[d][0])**2
+            D = D + (coords[c][1]-coords[d][1])**2
         return D

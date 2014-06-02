@@ -14,8 +14,11 @@ class Chain:
 
     class Vectors(object):
         """docstring for Vectors"""
-        def __init__(self, vec_list):
-            self.vec = array(vec_list, DTYPE)
+        def __init__(self, vec_list=None):
+            if vec_list:
+                self.vec = array(vec_list, DTYPE)
+            else:
+                self.vec = None
 
         def __len__(self):
             return len(self.vec)
@@ -23,8 +26,16 @@ class Chain:
         def __str__(self):
             return str(self.vec)
 
+        def copy(self):
+            v = Chain.Vectors()
+            v.vec = self.vec.copy()
+            return v
+
         def set(self, vec):
             self.vec = vec
+
+        def set_idx(self, idx, value):
+            self.vec[idx] = value
 
         def get(self, idx):
             return self.vec[idx]
@@ -44,14 +55,22 @@ class Chain:
 
     class Coords(object):
         """docstring for Coords"""
-        def __init__(self, num_points):
-            self.coords = zeros([num_points,2], DTYPE)
+        def __init__(self, num_points=0):
+            if num_points > 0:
+                self.coords = zeros([num_points,2], DTYPE)
+            else:
+                self.coords = None
 
         def __len__(self):
             return len(self.coords)
 
         def __str__(self):
             return str(self.coords)
+
+        def copy(self):
+            c = Chain.Coords()
+            c.coords = self.coords.copy()
+            return c
 
         def set(self, coords):
             self.coords = coords
@@ -121,18 +140,20 @@ class Chain:
         # the 2D coordinates of the chain, as a list of duples 
         # self.coords = zeros([len(self.vec)+1,2], int32)
         self.coords = Chain.Coords(len(self.vec)+1)
-        self.vec2coords(self.vec, self.coords)
+        self.vec2coords()
 
         # Initialize the vec, coords, and viable of any
         #  **proposed** new conformation.
         # Having these variables is convenient for use with
         # Monte Carlo algorithms, e.g.
-        # self.nextvec = self.vec.copy()
-        # self.nextcoords = self.coords.copy()
-        # self.nextviable = self.viable
+        self.nextvec = self.vec.copy()
+        self.nextcoords = self.coords.copy()
 
     def __str__(self):
         return "%s\n%s" % (self.vec, self.coords)
+
+    def get_vec_length(self):
+        return len(self.vec)
 
     def hpstr2bin(self):
         """Convert a string of type 'HPHPHPPPHHP' to a list of 1s and 0s.""" 
@@ -144,8 +165,8 @@ class Chain:
                 binseq.append(0)
         return binseq
 
-    def vec2coords(self, vec, coords):
-        self.coords.vec2coords(vec)
+    def vec2coords(self):
+        self.coords.vec2coords(self.vec)
 
     def is_viable(self):
         return self.coords.is_viable()
@@ -162,8 +183,8 @@ class Chain:
                     contactstate.append((c,d))
         return contactstate 
 
-    def energy(self):
-        return compute_energy(0., self.coords.as_npy_array(), self.H_inds)
+    def energy(self, epsilon=0.):
+        return compute_energy(epsilon, self.coords.as_npy_array(), self.H_inds)
 
     def grow(self):
         """
@@ -229,3 +250,31 @@ class Chain:
 
     def get_hp_string(self):
         return self.hpstring
+
+    def do_three_bead_flip(self, vecindex):
+        # do flip if vec directions are different
+        tmp1 = self.nextvec.get(vecindex) 
+        tmp2 = self.nextvec.get(vecindex+1)
+        if tmp1 != tmp2:
+            self.nextvec.set_idx(vecindex, tmp2)
+            self.nextvec.set_idx(vecindex + 1, tmp1)
+
+    def do_crankshaft(self, vecindex):
+        # do crankshaft if vec directions are different
+        tmp1 = self.nextvec.get(vecindex)
+        tmp2 = self.nextvec.get(vecindex+2)
+        if tmp1 != tmp2:
+            self.nextvec.set_idx(vecindex, tmp2)
+            self.nextvec.set_idx(vecindex + 2, tmp1)
+
+    def do_rigid_rot(self, vecindex, direction):
+        self.nextvec.vec[vecindex:] = \
+            (self.nextvec.vec[vecindex:] + direction) % 4
+
+    def update_chain(self):
+        self.vec.vec[:] = self.nextvec.vec[:]
+        self.coords.coords[:,:] = self.nextcoords.coords[:,:]
+
+    def nextviable(self):
+        self.nextcoords.vec2coords(self.nextvec)
+        return self.nextcoords.is_viable()

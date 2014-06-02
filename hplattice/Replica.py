@@ -67,7 +67,7 @@ class Replica:
 
     def propose_move(self):
         self.mc_move_fcn(self.chain)
-        return (self.chain.nextviable == 1)
+        return self.chain.nextviable()
 
     def metropolis_accept_move(self):
         return self.mc.metropolis(self)
