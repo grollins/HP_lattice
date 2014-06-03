@@ -11,13 +11,13 @@ class Replica:
 
     def __init__(self, config, repnum, nativeclist=None):
         """Initialize the Replica() object."""
-        temp = config.REPLICATEMPS[repnum]
+        T = config.REPLICATEMPS[repnum]
         self.repnum = repnum
         self.nativeclist = nativeclist
         self.repname = 'rep' + zfill( str(repnum), 2 )
         self.repdir = config.DATADIR + self.repname
         self.chain = Chain(config)
-        self.mc = Monty(config, temp, self.chain)
+        self.mc = Monty(config, T, self.chain)
         self.mc_move_fcn = self._select_move(config.MOVESET.strip())
 
     def init_mc_stats(self):
@@ -81,6 +81,9 @@ class Replica:
 
     def get_vec(self):
         return self.chain.vec
+
+    def get_T(self):
+        return self.mc.temp
 
 def attemptswap(swap_method, replicas):
     N = len(replicas)

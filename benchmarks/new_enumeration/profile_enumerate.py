@@ -6,7 +6,8 @@ from hplattice.Config import Config
 from hplattice.Enumerator import Enumerator
 
 
-HP_STRING_SET = (10, 'HPPHPPHPPH')
+# HP_STRING_SET = (10, 'HPPHPPHPPH')
+HP_STRING_SET = (14, 'HHHPHHPHHHHPPH')
 
 
 def load_configuration(hp_string, initial_vec):

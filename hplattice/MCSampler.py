@@ -39,6 +39,11 @@ class MCSampler(object):
         # initialize replica-level stats
         for r in self.replicas:
             r.init_mc_stats()
+        # T-based stats
+        self.accepted_steps_at_T = {}
+        for T in self.config.REPLICATEMPS:
+            self.accepted_steps_at_T[T] = 0
+
 
     def _update_swap_stats(self, i, j, swap_sucess):
         self.swaps[i] += 1
@@ -59,10 +64,11 @@ class MCSampler(object):
               ('replica','viablesteps','steps','MCaccept','viableswaps',
                'swaps','SWAPaccept')
         for idx, rep in enumerate(self.replicas):
-            print '%-12d %-12d %-12d %-12s %-12d %-12d %-12s' % \
+            print '%-12d %-12d %-12d %-12s %-12d %-12d %-12s %d %d' % \
                 (idx, rep.viablesteps, rep.steps,
                  '%1.3f' % rep.acceptance, self.swaps[idx],
-                 self.viable_swaps[idx], '%1.3f' % self.swap_acceptance[idx])
+                 self.viable_swaps[idx], '%1.3f' % self.swap_acceptance[idx],
+                 rep.mc.tempfromrep, rep.mc.temp)
         if self.config.STOPATNATIVE == 1:
             print 'NATIVE CLIST:', self.native_contacts
         print '%-8s %-12s %-12s' % \
@@ -70,8 +76,14 @@ class MCSampler(object):
         for rep in self.replicas:
             print '%-8d %-12d %s %s' % \
                 (rep.repnum, rep.is_native(), rep.contactstate(), rep.get_vec())
+        print self.accepted_steps_at_T
 
-    def do_mc_sampling(self):
+    def do_mc_sampling(self, save_trajectory=False, trajectory_filename='traj.xyz'):
+        traj_dict = {}
+        for i, r in enumerate(self.replicas):
+            traj = Trajectory(save_trajectory, '%03d_%s' % (i, trajectory_filename))
+            traj_dict[r] = traj
+
         self._init_mc_stats()
         found_native = False
         
@@ -81,6 +93,8 @@ class MCSampler(object):
                 move_is_viable = r.propose_move()
                 if move_is_viable:
                     move_is_accepted = r.metropolis_accept_move()
+                    if move_is_accepted:
+                        self.accepted_steps_at_T[r.get_T()] += 1
                 else:
                     move_is_accepted = False
                 r.record_stats(move_is_viable, move_is_accepted)
@@ -104,6 +118,10 @@ class MCSampler(object):
                     r.compute_mc_acceptance()       
                 # calc replica swap acceptance
                 self._compute_swap_acceptance()
-                self._output_stats(prodstep)
+                # self._output_stats(prodstep)
+                for rep, traj in traj_dict.iteritems():
+                    traj.snapshot(rep.chain)
 
         self._output_stats(prodstep)
+        for traj in traj_dict.itervalues():
+            traj.finalize()
