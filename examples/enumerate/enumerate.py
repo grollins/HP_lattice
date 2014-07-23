@@ -16,7 +16,7 @@ HP_STRING_SET = \
 def load_configuration(hp_string, initial_vec):
     configfile = 'enumerate.conf'
     config = Config( filename=configfile )
-    config.HPSTRING = hp_string
+    config.HPSTRING = hp_string.strip()
     config.INITIALVEC = initial_vec
     config.RESTRAINED_STATE = []
     return config

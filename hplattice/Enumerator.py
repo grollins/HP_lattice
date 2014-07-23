@@ -7,7 +7,7 @@ class Enumerator(object):
     def __init__(self, config, verbose):
         self.config = config
         self.verbose = verbose
-        self.chain = Chain(self.config)
+        self.chain = Chain(self.config.HPSTRING, self.config.INITIALVEC)
 
     def enumerate_states(self, save_trajectory=False, trajectory_filename='traj.xyz'):
         nconfs = 0

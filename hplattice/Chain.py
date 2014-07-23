@@ -72,8 +72,18 @@ class Chain:
             c.coords = self.coords.copy()
             return c
 
-        def set(self, coords):
-            self.coords = coords
+        def set(self, coords, idx=None):
+            if idx is None:
+                self.coords = coords
+            else:
+                self.coords[idx,0] = coords[0]
+                self.coords[idx,1] = coords[1]
+
+        def get(self, idx=None):
+            if idx is None:
+                return self.coords
+            else:
+                return self.coords[idx,:]
 
         def vec2coords(self, vec):
             self.coords = vec2coords(vec.as_npy_array(), self.coords)
@@ -108,10 +118,10 @@ class Chain:
             self.coords[idx,1] += 1
 
 
-    def __init__(self, config):
+    def __init__(self, hpstring, initial_vec):
         print '\tInitializing Chain.py object...'
         # The HP sequence as a string
-        self.hpstring = config.HPSTRING.strip()
+        self.hpstring = hpstring
         # the chain length
         self.n = len(self.hpstring)
         # The HP seq in binary rep (H=1 P=0)
@@ -134,11 +144,9 @@ class Chain:
         #  the origin on a two-dimensional square lattice.
 
         # an (n-1)-dimensional vector representation of the chain
-        # self.vec = array(config.INITIALVEC, int32)
-        self.vec = Chain.Vectors(config.INITIALVEC)
+        self.vec = Chain.Vectors(initial_vec)
 
         # the 2D coordinates of the chain, as a list of duples 
-        # self.coords = zeros([len(self.vec)+1,2], int32)
         self.coords = Chain.Coords(len(self.vec)+1)
         self.vec2coords()
 
@@ -148,6 +156,9 @@ class Chain:
         # Monte Carlo algorithms, e.g.
         self.nextvec = self.vec.copy()
         self.nextcoords = self.coords.copy()
+
+    def __len__(self):
+        return self.n
 
     def __str__(self):
         return "%s\n%s" % (self.vec, self.coords)
