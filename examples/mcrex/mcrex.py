@@ -37,7 +37,8 @@ def main():
             config = load_configuration(this_hp_string, initial_vec,
                                         clist_dir)
             s = MCSampler(config, VERBOSE)
-            s.do_mc_sampling()
+            s.do_mc_sampling(save_trajectory=True,
+                             trajectory_filename='%02d_traj.xyz' % N)
 
 if __name__ == '__main__':
     main()
