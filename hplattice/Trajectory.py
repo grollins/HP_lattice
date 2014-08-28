@@ -1,11 +1,15 @@
+def open_file_stream(filename):
+    return open(filename, 'w')
+
 
 class Trajectory(object):
     """docstring for Trajectory"""
-    def __init__(self, save_trajectory, trajectory_filename):
+    def __init__(self, save_trajectory, trajectory_filename,
+                 open_stream_fcn=open_file_stream):
         self.save_trajectory = save_trajectory
         self.trajectory_filename = trajectory_filename
         if self.save_trajectory:
-            self.output_stream = open(self.trajectory_filename, 'w')
+            self.output_stream = open_stream_fcn(self.trajectory_filename)
         else:
             self.output_stream = None
         self.frame_num = 0
@@ -23,7 +27,10 @@ class Trajectory(object):
             self.output_stream.write(coord_str)
             self.frame_num += 1
         else:
-            return
+            pass
 
     def finalize(self):
-        self.output_stream.close()
+        if self.output_stream:
+            self.output_stream.close()
+        else:
+            pass

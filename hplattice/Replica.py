@@ -2,22 +2,20 @@ from string import zfill
 from random import random
 from math import exp
 
-from .Chain import Chain
-from .Monty import Monty
 
-
-class Replica:
+class Replica(object):
     """A container object, to hold the Chain() and Monty() objects"""
 
-    def __init__(self, config, repnum, nativeclist=None):
+    def __init__(self, lattice_factory, config, repnum, nativeclist=None):
         """Initialize the Replica() object."""
         T = config.REPLICATEMPS[repnum]
         self.repnum = repnum
         self.nativeclist = nativeclist
         self.repname = 'rep' + zfill( str(repnum), 2 )
         self.repdir = config.DATADIR + self.repname
-        self.chain = Chain(config)
-        self.mc = Monty(config, T, self.chain)
+        self.chain = \
+            lattice_factory.make_chain(config.HPSTRING, config.INITIALVEC)
+        self.mc = lattice_factory.make_monty(config, T, self.chain)
         self.mc_move_fcn = self._select_move(config.MOVESET.strip())
 
     def init_mc_stats(self):
@@ -85,6 +83,12 @@ class Replica:
     def get_T(self):
         return self.mc.temp
 
+    def energy(self):
+        return self.mc.energy(self.chain)
+
+    def kT(self):
+        return self.mc.kT()
+
 def attemptswap(swap_method, replicas):
     N = len(replicas)
     # Attempt a swap between replicas
@@ -119,10 +123,8 @@ def attemptswap(swap_method, replicas):
     ###
     ### (see Hansmann 1997)
 
-    delfactor = ((1/(replicas[j].mc.k*replicas[j].mc.temp)) - (1/(replicas[j].mc.k*replicas[i].mc.temp)))
-    delfactor = delfactor * (replicas[j].mc.energy(replicas[j].chain) - replicas[i].mc.energy(replicas[i].chain) )
+    boltzfactor = _compute_boltz_factor(replicas[i], replicas[j])
 
-    boltzfactor = exp(delfactor)
     if randnum < boltzfactor:
 
         # swap the ***temperatures***
@@ -141,3 +143,9 @@ def attemptswap(swap_method, replicas):
         swap_success = False
 
     return i, j, swap_success
+
+def _compute_boltz_factor(replica_i, replica_j):
+    delfactor = (1. / replica_j.kT()) - (1. / replica_i.kT())
+    delfactor = delfactor * (replica_j.energy() - replica_i.energy())
+    boltzfactor = exp(delfactor)
+    return boltzfactor

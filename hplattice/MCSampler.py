@@ -1,20 +1,19 @@
-from random import Random
-from math import exp
 from numpy import zeros, nonzero
-
-from .Replica import Replica, attemptswap
-from .Trajectory import Trajectory
+from .Replica import attemptswap
 
 
 class MCSampler(object):
     """docstring for MCSampler"""
-    def __init__(self, config, verbose=False):
+    def __init__(self, lattice_factory, config, verbose=False):
+        self.lattice_factory = lattice_factory
         self.config = config
         self.verbose = verbose
         self.native_contacts = self._load_native_contacts()
         self.replicas = []
         for i in range(0, self.config.NREPLICAS):
-            self.replicas.append( Replica(self.config, i, self.native_contacts) )
+            r = lattice_factory.make_replica(self.config, i,
+                                             self.native_contacts)
+            self.replicas.append(r)
 
     def _load_native_contacts(self):
         if self.config.STOPATNATIVE == 1:
@@ -81,7 +80,8 @@ class MCSampler(object):
     def do_mc_sampling(self, save_trajectory=False, trajectory_filename='traj.xyz'):
         traj_dict = {}
         for i, r in enumerate(self.replicas):
-            traj = Trajectory(save_trajectory, '%03d_%s' % (i, trajectory_filename))
+            traj = self.lattice_factory.make_trajectory(save_trajectory,
+                    '%03d_%s' % (i, trajectory_filename))
             traj_dict[r] = traj
 
         self._init_mc_stats()

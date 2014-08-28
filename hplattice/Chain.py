@@ -6,7 +6,7 @@ from .util import vec2coords, check_viability, compute_energy, is_nonsym, \
 DTYPE = int32
 
 
-class Chain:
+class Chain(object):
     """
     An object to represent the 2D HP lattice chain and its attributes,
     with method functions.

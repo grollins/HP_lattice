@@ -2,10 +2,11 @@ from random import random
 from math import floor, exp
 from numpy import array, int32
 
-from .util import compute_energy
+
+BOLTZ_CONST = 0.001987  # (kcal/K.mol) Boltzmann's constant
 
 
-class Monty:
+class Monty(object):
     """A collection of functions to perform Monte Carlo move-set operations
        on an HP lattice Chain object."""
 
@@ -25,41 +26,45 @@ class Monty:
         # The energetic strength of a contact
         self.epsilon = config.epsilon
         # Boltzmann's constant
-        self.k = config.k
+        # self.k = config.k
 
         # (both of these are copies from Config() )
         self.restraint = DistRestraint(config.RESTRAINED_STATE, config.KSPRING)
         self.lastenergy = self.energy(chain) + self.restraint.energy(chain)
 
-    def move1(self, chain):
+    def kT(self):
+        return BOLTZ_CONST * self.temp
+
+    def move1(self, chain, vecindex=None, direction=None):
         """Apply moveset 'MC1' to the chain:
            (i)  three-bead flips
            (ii) end flips
            REFERENCE: Dill and Chan, 1994, 1996.
         """
-        r = random()
-        s = random()
-        vecindex = int(floor((chain.n - 1.0001)*r))
-        if s < 0.5:
-            direction = 1
+        if vecindex is None:
+            r = random()
+            vecindex = int(floor((chain.n - 1.0001)*r))
         else:
-            direction = -1      
+            pass
+
+        if direction is None:
+            s = random()
+            if s < 0.5:
+                direction = 1
+            else:
+                direction = -1
+        else:
+            pass
  
-        ### if the vec index is on the end, do an end flip
-        if (vecindex == 0) | (vecindex == len(chain.nextvec)-1):
-            chain.nextvec[vecindex] = (chain.nextvec[vecindex] + direction) % 4
-        ### else, do a three-bead flip, i.e. switch two adjacent {n,e,w,s} directions
+        if (vecindex == 0) or (vecindex == len(chain.nextvec)-1):
+            # if the vec index is on the end, do an end flip
+            chain.do_rigid_rot(vecindex, direction)
+
         else:
-            tmp = chain.nextvec[vecindex] 
-            chain.nextvec[vecindex] = chain.nextvec[vecindex+1]
-            chain.nextvec[vecindex + 1] = tmp
+            # do a three-bead flip, i.e. switch two adjacent {n,e,w,s} directions
+            chain.do_three_bead_flip(vecindex)
 
-        chain.nextcoords = \
-            chain.vec2coords(chain.nextvec, chain.nextcoords)
-        chain.nextviable = \
-            chain.viability(chain.nextcoords)
-
-    def move2(self, chain):
+    def move2(self, chain, vecindex=None, direction=None, moveseed=None):
         """
         Apply moveset MC2 to the chain:
         (i)   three-bead flips
@@ -68,17 +73,27 @@ class Monty:
         (iv)  rigid rotations
         REFERENCE:  Dill and Chan, 1994, 1996
         """
-        r = random()
-        s = random()
-        t = random()    
-        vecindex = int(floor((chain.n - 1.0001)*r))
-        
-        if s < 0.5:
-            direction = 1      
+        if vecindex is None:
+            r = random()
+            vecindex = int(floor((chain.n - 1.0001)*r))
         else:
-            direction = -1      
+            pass
+
+        if direction is None:
+            s = random()
+            if s < 0.5:
+                direction = 1
+            else:
+                direction = -1
+        else:
+            pass
 
         length_of_nextvec = chain.get_vec_length()
+        
+        if moveseed is None:
+            t = random()
+        else:
+            t = moveseed
 
         # 1/3 of the time do a three-bead flip
         if (t < 0.33333) and (vecindex < length_of_nextvec-1):
@@ -100,12 +115,7 @@ class Monty:
         else: 
             chain.do_rigid_rot(vecindex, direction)
 
-        # chain.nextcoords = \
-        #     chain.vec2coords(chain.nextvec, chain.nextcoords)
-        # chain.nextviable = \
-        #     chain.viability(chain.nextcoords)
-
-    def move3(self, chain):
+    def move3(self, chain, vecindex=None, direction=None):
         """
         Apply moveset 'MC3' to the chain.
         This is just a simple set to change the direction of
@@ -116,45 +126,22 @@ class Monty:
         About 5% viable moves are expected.
         """
     
-        r = self.random.random()
-        s = self.random.random()
-        vecindex = int(floor((chain.n - 1.0001)*r))
-
-        if s < 0.5:
-            direction = 1
+        if vecindex is None:
+            r = random()
+            vecindex = int(floor((chain.n - 1.0001)*r))
         else:
-            direction = -1      
+            pass
+
+        if direction is None:
+            s = random()
+            if s < 0.5:
+                direction = 1
+            else:
+                direction = -1
+        else:
+            pass
   
-        chain.nextvec[vecindex] = \
-            (chain.nextvec[vecindex] + direction) % 4
-        chain.nextcoords = \
-            chain.vec2coords(chain.nextvec, chain.nextcoords)
-        chain.nextviable = \
-            chain.viability(chain.nextcoords)
-
-    def move4(self, chain):
-        """
-        Apply moveset 'MC4' to the chain:
-        This is another vert simple moveset, to just change one angle
-        in a rigid rotation.
-        Like 'MS3', this generates about 5% viable moves.
-        """
-        r = random()
-        s = random()
-        vecindex = int(floor((chain.n - 1.0001)*r))
-
-        if s < 0.5:
-            direction = 1
-        else:
-            direction = -1
-
-        ### a rigid rotation
-        self._do_rigid_rot(vecindex, direction, replica)
-
-        chain.nextcoords = \
-            chain.vec2coords(chain.nextvec, chain.nextcoords)
-        chain.nextviable = \
-            chain.viability(chain.nextcoords)
+        chain.do_rigid_rot(vecindex, direction)
 
     def metropolis(self, replica):
         """
@@ -166,8 +153,7 @@ class Monty:
         # accept with Metroplis criterion
         thisenergy = self.energy(replica.chain) + \
                         self.restraint.energy(replica.chain)  
-        boltzfactor = exp((thisenergy - self.lastenergy) / \
-                        (self.k*self.temp))
+        boltzfactor = exp( (thisenergy - self.lastenergy) / self.kT() )
 
         if randnum < boltzfactor:
             # update the chain

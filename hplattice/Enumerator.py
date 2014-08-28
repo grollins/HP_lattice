@@ -1,13 +1,12 @@
-from .Chain import Chain
-from .Trajectory import Trajectory
-
 
 class Enumerator(object):
     """docstring for Enumerator"""
-    def __init__(self, config, verbose):
+    def __init__(self, lattice_factory, config, verbose):
+        self.lattice_factory = lattice_factory
         self.config = config
         self.verbose = verbose
-        self.chain = Chain(self.config.HPSTRING, self.config.INITIALVEC)
+        self.chain = lattice_factory.make_chain(self.config.HPSTRING,
+                                                self.config.INITIALVEC)
 
     def enumerate_states(self, save_trajectory=False, trajectory_filename='traj.xyz'):
         nconfs = 0
@@ -16,7 +15,8 @@ class Enumerator(object):
         # dictionary of {number of contacts: number of conformations}
         contacts = {}
 
-        traj = Trajectory(save_trajectory, trajectory_filename)
+        traj = self.lattice_factory.make_trajectory(save_trajectory,
+                                                    trajectory_filename)
 
         #################
         #

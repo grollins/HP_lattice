@@ -1,7 +1,7 @@
 from string import join, splitfields, joinfields
 
 
-class Config:
+class Config(object):
     """A data structure to hold all the configuration data for an HP model
        calculation."""
 
@@ -24,7 +24,7 @@ class Config:
         self.epsilon = self.eps * self.k * self.T
 
         # the contact state to be harmonically restrained
-        self.RESTRAINED_STATE = [(1,4),(6,9)]
+        self.RESTRAINED_STATE = []
         # (in squared-distance d^2 = D)
         # D spring constant (in kcal/mol per D)
         self.KSPRING = 0.0 * self.k * self.T
