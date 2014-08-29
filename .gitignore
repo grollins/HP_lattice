@@ -4,3 +4,4 @@ build
 sequences
 examples/enumerate/enumerate_data
 examples/mcrex/mcrex_data
+docs/_build
