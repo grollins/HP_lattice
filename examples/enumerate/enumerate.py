@@ -27,7 +27,7 @@ def main():
             print N, this_hp_string
             initial_vec = [0] * (N - 1)
             config = load_configuration(this_hp_string, initial_vec)
-            en = Enumerator(config, verbose=False)
+            en = Enumerator(config)
             en.enumerate_states(save_trajectory=True,
                                 trajectory_filename='%d_%s_traj.xyz' % \
                                 (N, this_hp_string))

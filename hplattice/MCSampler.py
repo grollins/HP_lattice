@@ -3,11 +3,20 @@ from .Replica import attemptswap
 
 
 class MCSampler(object):
-    """docstring for MCSampler"""
-    def __init__(self, lattice_factory, config, verbose=False):
+    """
+    *MCSampler* objects are used to run replica exchange monte carlo simulations
+    of an HP chain. The HP chain is defined in a configuration file, specified
+    by the *config* parameter. The configuration file also specifies the
+    replica exchange parameters, such as the temperature of each replica.
+
+    :param lattice_factory: factory object that knows how to create replicas and
+                            trajectories.
+    :type lattice_factory: :class:`hplattice.LatticeFactory`
+    :param str config: path to configuration file
+    """
+    def __init__(self, lattice_factory, config):
         self.lattice_factory = lattice_factory
         self.config = config
-        self.verbose = verbose
         self.native_contacts = self._load_native_contacts()
         self.replicas = []
         for i in range(0, self.config.NREPLICAS):
@@ -21,14 +30,12 @@ class MCSampler(object):
             with open(nativeclistfile,'r') as fnative:
                 nativeclist_str = fnative.readline()
                 nativeclist = eval(nativeclist_str)
-            if self.verbose:
-                print 'NATIVE CLIST:', nativeclist
         else:
             nativeclist = None
         return nativeclist
 
     def _init_mc_stats(self):
-        ### Replica exchange stats 
+        ### Initialize replica exchange stats 
         # the number of attemped replica swaps
         self.swaps = zeros(len(self.replicas))
         # the number of viable swaps
@@ -43,8 +50,8 @@ class MCSampler(object):
         for T in self.config.REPLICATEMPS:
             self.accepted_steps_at_T[T] = 0
 
-
     def _update_swap_stats(self, i, j, swap_sucess):
+        ### increment swap stats for replica i and replica j
         self.swaps[i] += 1
         self.swaps[j] += 1
         if swap_sucess:
@@ -52,12 +59,13 @@ class MCSampler(object):
             self.viable_swaps[j] += 1
 
     def _compute_swap_acceptance(self):
+        ### compute the fraction of swaps that have been viable
         inds = nonzero(self.swaps)
         self.swap_acceptance[inds] = \
             (1.*self.viable_swaps[inds]) / self.swaps[inds]
 
     def _output_stats(self, prodstep):
-        # Output the status of the simulation
+        ### Output the status of the simulation
         print prodstep, 'production steps'
         print '%-12s %-12s %-12s %-12s %-12s %-12s %-12s ' % \
               ('replica','viablesteps','steps','MCaccept','viableswaps',
@@ -78,6 +86,16 @@ class MCSampler(object):
         print self.accepted_steps_at_T
 
     def do_mc_sampling(self, save_trajectory=False, trajectory_filename='traj.xyz'):
+        """
+        Run replica exchange monte carlo of the HP chain.
+
+        :param bool save_trajectory: Generate xyz coordinate trajectories
+                                     when ``True``. There will be separate
+                                     trajectory for each replica.
+        :param str trajectory_filename: optional, save trajectory to this path.
+                                        Replica numbers will be prepended to the
+                                        name specified here.
+        """
         traj_dict = {}
         for i, r in enumerate(self.replicas):
             traj = self.lattice_factory.make_trajectory(save_trajectory,

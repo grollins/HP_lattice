@@ -34,7 +34,7 @@ def main():
             initial_vec = [0] * (N - 1)
             with Timer() as t:
                 config = load_configuration(this_hp_string, initial_vec)
-                en = Enumerator(config, verbose=False)
+                en = Enumerator(config)
                 en.enumerate_states()
             time_elapsed = t.interval
             this_data = (N, time_elapsed, this_hp_string)

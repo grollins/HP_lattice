@@ -1,14 +1,31 @@
 
 class Enumerator(object):
-    """docstring for Enumerator"""
-    def __init__(self, lattice_factory, config, verbose):
+    """
+    *Enumerator* objects are used to enumerate all conformations of
+    an HP chain. The HP chain is defined in a configuration file, specified
+    by the *config* parameter.
+
+    :param lattice_factory: factory object that knows how to create chains and
+                            trajectories
+    :type lattice_factory: :class:`hplattice.LatticeFactory`
+    :param str config: path to configuration file
+    """
+    def __init__(self, lattice_factory, config):
         self.lattice_factory = lattice_factory
         self.config = config
-        self.verbose = verbose
         self.chain = lattice_factory.make_chain(self.config.HPSTRING,
                                                 self.config.INITIALVEC)
 
-    def enumerate_states(self, save_trajectory=False, trajectory_filename='traj.xyz'):
+    def enumerate_states(self, save_trajectory=False,
+                         trajectory_filename='traj.xyz'):
+        """
+        Enumerate all conformations of an HP chain.
+        Prints density of contact states to stdout.
+
+        :param bool save_trajectory: Generate an xyz coordinate trajectory
+                                     when ``True``.
+        :param str trajectory_filename: optional, save trajectory to this path
+        """
         nconfs = 0
         # dictionary of {repr{contact state}: number of conformations}
         contact_states = {}
