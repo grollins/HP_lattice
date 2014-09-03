@@ -21,11 +21,11 @@ class Chain(object):
     also store the 2D coordinates of each monomer. The set of coordinates is stored
     in a :class:`Coords` object.
 
-    :param hpstring: String that specifies H or P for each monomer.
-                     Example: ``PHPPHP``
-    :param initial_vec: List that specifies the direction of each bond.
-                        Example: ``[0,0,1,2,1]``, which would correspond
-                        to up, up, left, down, left.
+    :param str hpstring: String that specifies H or P for each monomer.
+                         Example: ``PHPPHP``
+    :param list initial_vec: List that specifies the direction of each bond.
+                             Example: ``[0,0,1,2,1]``, which would correspond
+                             to up, up, left, down, left.
 
     """
 
@@ -36,9 +36,9 @@ class Chain(object):
         0 (up), 1 (left), 2 (down) or 3 (right). A chain with :math:`N` monomers
         has :math:`N-1` vectors.
 
-        :param vec_list: List that specifies the direction of each bond.
-                         Example: ``[0,0,1,2,1]``, which would correspond
-                         to up, up, left, down, left.
+        :param list vec_list: List that specifies the direction of each bond.
+                              Example: ``[0,0,1,2,1]``, which would correspond
+                              to up, up, left, down, left.
 
         """
         def __init__(self, vec_list=None):
@@ -55,7 +55,8 @@ class Chain(object):
 
         def copy(self):
             """
-            :return: another :class:`Vectors` object, identical to this one
+            :return: copy of this object
+            :rtype: :class:`Vectors`
             """
             v = Chain.Vectors()
             v.vec = self.vec.copy()
@@ -65,7 +66,8 @@ class Chain(object):
             """
             Change all of the vectors.
 
-            :param vec: :class:`numpy.ndarray`
+            :param vec: array of vector values
+            :type vec: :class:`numpy.ndarray`
             """
             self.vec = vec
 
@@ -73,8 +75,8 @@ class Chain(object):
             """
             Change one of the vectors.
 
-            :param idx: ``int``, the index of the vector to change
-            :param value: ``int``, the value to change the vector to
+            :param int idx: the index of the vector to change
+            :param int value: the value to change the vector to
             """
             self.vec[idx] = value
 
@@ -82,7 +84,7 @@ class Chain(object):
             """
             Get one of the vectors.
 
-            :param idx: ``int``, the index of a vector 
+            :param int idx: the index of a vector 
             """
             return self.vec[idx]
 
@@ -102,7 +104,7 @@ class Chain(object):
             """
             Rotate a vector clockwise.
 
-            :param idx: ``int``, the index of a vector
+            :param int idx: the index of a vector
             """
             self.vec[idx] += 1
 
@@ -110,7 +112,8 @@ class Chain(object):
             """
             Convert :class:`Vectors` object to :class:`numpy.ndarray`
 
-            :return: :class:`numpy.ndarray`
+            :return: array of vector values
+            :rtype: :class:`numpy.ndarray`
             """
             return self.vec
 
@@ -119,7 +122,7 @@ class Chain(object):
         """
         :class:`Coords` is the set of monomer coordinates for a chain.
 
-        :param num_monomers: The number of monomers in the chain.
+        :param int num_monomers: The number of monomers in the chain.
 
         """
         def __init__(self, num_monomers=0):
@@ -136,7 +139,8 @@ class Chain(object):
 
         def copy(self):
             """
-            :return: another :class:`Coords` object, identical to this one
+            :return: a copy of this object
+            :rtype: :class:`Coords`
             """
             c = Chain.Coords()
             c.coords = self.coords.copy()
@@ -145,10 +149,11 @@ class Chain(object):
         def set(self, coords, idx=None):
             """
             Change the coordinates for all monomers or one monomer if
-            `idx` is defined.
+            *idx* is defined.
 
-            :param coords: :class:`numpy.ndarray`
-            :param idx: (optional) ``int``, the index of a monomer
+            :param coords: 2D array of coordinates
+            :type coords: :class:`numpy.ndarray`
+            :param int idx: (optional), the index of a monomer
             """
             if idx is None:
                 self.coords = coords
@@ -160,7 +165,7 @@ class Chain(object):
             """
             Get the coordinates of a monomer.
 
-            :param idx: ``int``, the index of a monomer
+            :param int idx: the index of a monomer
             """
             if idx is None:
                 return self.coords
@@ -172,7 +177,8 @@ class Chain(object):
             Convert a :class:`Vectors` object into a set of coordinates,
             and replace the currently stored coordinates with the result.
 
-            :param vec: :class:`Vectors`
+            :param vec: convert these vectors into a set of coordinates
+            :type vec: :class:`Vectors`
             """
             # delegate to faster Cython implementation
             self.coords = vec2coords(vec.as_npy_array(), self.coords)
@@ -181,7 +187,8 @@ class Chain(object):
             """
             Convert :class:`Coords` object to :class:`numpy.ndarray`
 
-            :return: :class:`numpy.ndarray`
+            :return: array of coordinates
+            :rtype: :class:`numpy.ndarray`
             """
             return self.coords
 
@@ -191,6 +198,7 @@ class Chain(object):
             are allowed.
 
             :return: ``True`` if no problems are found with the chain.
+            :rtype: bool
             """
             return check_viability(self.coords)
 
@@ -198,8 +206,8 @@ class Chain(object):
             """
             Compute the cartesian distance between two monomers.
 
-            :param idx1: ``int``, the index of a monomer 
-            :param idx2: ``int``, the index of a monomer
+            :param int idx1: the index of a monomer 
+            :param int idx2: the index of a monomer
             """
             return sqrt(sum((self.coords[idx1,:] - self.coords[idx2,:])**2))
 
@@ -222,7 +230,7 @@ class Chain(object):
             """
             Increments the x-coord and decrements the y-coord of a monomer.
 
-            :param idx: ``int``, the index of a monomer
+            :param int idx: the index of a monomer
             """
             self.coords[idx,0] += 1
             self.coords[idx,1] -= 1
@@ -231,7 +239,7 @@ class Chain(object):
             """
             Decrements the x-coord and decrements the y-coord of a monomer.
 
-            :param idx: ``int``, the index of a monomer
+            :param int idx: the index of a monomer
             """
             self.coords[idx,0] -= 1
             self.coords[idx,1] -= 1
@@ -240,7 +248,7 @@ class Chain(object):
             """
             Decrements the x-coord and increments the y-coord of a monomer.
 
-            :param idx: ``int``, the index of a monomer
+            :param int idx: the index of a monomer
             """
             self.coords[idx,0] -= 1
             self.coords[idx,1] += 1
@@ -282,6 +290,7 @@ class Chain(object):
         """
         :return: The number of vectors in the chain, which should be one less
                  than the number of monomers.
+        :rtype: int
         """
         return len(self.vec)
 
@@ -302,7 +311,8 @@ class Chain(object):
         Convert a :class:`Vectors` object into a set of coordinates,
         and replace the currently stored coordinates with the result.
 
-        :param vec: :class:`Vectors`
+        :param vec: generate coordinates from current vectors
+        :type vec: :class:`Vectors`
         """
         # delegate to the implementation in Coords
         self.coords.vec2coords(self.vec)
@@ -313,6 +323,7 @@ class Chain(object):
         are allowed.
 
         :return: ``True`` if no problems are found with the chain.
+        :rtype: bool
         """
         # delegate to the implementation in Coords
         return self.coords.is_viable()
@@ -324,6 +335,7 @@ class Chain(object):
         ``(i, i+1)`` and ``(i, i+2)`` pairs.
 
         :return: list of ``(idx1,idx2)`` contacts (tuples)
+        :rtype: list
         """
         contactstate = []
         for c in range(0, len(self.coords)-1):
@@ -337,8 +349,9 @@ class Chain(object):
         """
         Compute energy of chain, based on hydrophobic contacts.
 
-        :param epsilon: ``float``, the energy of one hydrophobic contact.
-        :return: ``float``, the total energy of the chain.
+        :param float epsilon: the energy of one hydrophobic contact.
+        :return: the total energy of the chain.
+        :rtype: float
         """
         return compute_energy(epsilon, self.coords.as_npy_array(), self.H_inds)
 
@@ -374,6 +387,7 @@ class Chain(object):
         of chain conformations.
 
         :return: ``1`` if no more shifts are possible and ``0`` otherwise.
+        :rtype: int
         """
         # pop off all the trailing 3's		
         while 1:
@@ -396,6 +410,7 @@ class Chain(object):
         direction ``0`` and the first turn be a ``1`` (right turn)
         
         :return: ``1`` if the chain is non-symmetric, ``0`` otherwise.
+        :rtype: int
         """
         # delegate to the faster Cython implementation
         return is_nonsym( self.vec.as_npy_array() )
@@ -403,18 +418,21 @@ class Chain(object):
     def is_first_vec_one(self):
         """
         :return: ``True`` if the first vector points to the right
+        :rtype: bool
         """
         return (self.vec.get(0) == 1)
 
     def get_coord_array(self):
         """
-        :return: :class:`numpy.ndarray`, the coordinates of the chain
+        :return: the coordinates of the chain
+        :rtype: :class:`numpy.ndarray`
         """
         return self.coords.as_npy_array()
 
     def get_hp_string(self):
         """
-        :return: ``string``, example ``HPHPHPPPHHP`` 
+        :return: example ``HPHPHPPPHHP``
+        :rtype: string
         """
         return self.hpstring
 
@@ -422,7 +440,7 @@ class Chain(object):
         """
         Swap the values of a pair of neighboring chain vectors.
 
-        :param vecindex: ``int``, swap ``vecindex`` with ``vecindex+1``
+        :param int vecindex: swap ``vecindex`` with ``vecindex+1``
         """
         # do flip if vec directions are different
         tmp1 = self.nextvec.get(vecindex) 
@@ -435,7 +453,7 @@ class Chain(object):
         """
         Swap the values of a pair of chain vectors that are next-nearest neighbors.
 
-        :param vecindex: ``int``, swap ``vecindex`` with ``vecindex+2``
+        :param int vecindex: swap ``vecindex`` with ``vecindex+2``
         """
         # do crankshaft if vec directions are different
         tmp1 = self.nextvec.get(vecindex)
@@ -457,8 +475,8 @@ class Chain(object):
         
             3 --> 0
 
-        :param vecindex: ``int``, a valid vector index
-        :param direction: ``1`` for clockwise, ``-1`` for counterclockwise
+        :param int vecindex: a valid vector index
+        :param int direction: ``1`` for clockwise, ``-1`` for counterclockwise
         """
         self.nextvec.vec[vecindex:] = \
             (self.nextvec.vec[vecindex:] + direction) % 4
@@ -479,6 +497,7 @@ class Chain(object):
         disallowed state.
 
         :return: ``True`` if no problems are found with the chain.
+        :rtype: bool
         """
         self.nextcoords.vec2coords(self.nextvec)
         return self.nextcoords.is_viable()
