@@ -1,5 +1,5 @@
 from sys import platform, prefix, version_info
-from os.path import join, expanduser
+from os.path import join
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext

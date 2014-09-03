@@ -6,11 +6,11 @@ from ..Chain import Chain
 
 @pytest.fixture
 def coords():
-    return Chain.Coords(num_points=5)
+    return Chain.Coords(num_monomers=5)
 
 @pytest.fixture
 def bad_coords():
-    c = Chain.Coords(num_points=5)
+    c = Chain.Coords(num_monomers=5)
     c.set((0,0), idx=4)
     return c
 

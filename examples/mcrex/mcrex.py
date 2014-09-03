@@ -6,7 +6,7 @@ from hplattice.Config import Config
 from hplattice.MCSampler import MCSampler
 
 
-CLIST_PATH = '../../sequences/clist'
+CLIST_PATH = '../../HP-sequences/sequences/clist'
 HP_STRING_SET = \
     ((4, ['HPPH', 'HHPH', 'HPHH', 'HHHH'], join(CLIST_PATH, 'hp04')),
      (6, ['HHPPHH', 'HPPHPH', 'HHPHPH', 'HPPHHH'], join(CLIST_PATH, 'hp06')),
