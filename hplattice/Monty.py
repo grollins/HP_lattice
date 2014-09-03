@@ -7,12 +7,18 @@ BOLTZ_CONST = 0.001987  # (kcal/K.mol) Boltzmann's constant
 
 
 class Monty(object):
-    """A collection of functions to perform Monte Carlo move-set operations
-       on an HP lattice Chain object."""
+    """
+    A collection of functions to perform Monte Carlo move-set operations
+    on an HP chain.
+
+    :param config: configuration parameters for chain and simulation
+    :type config: :class:`hplattice.Config.Config`
+    :param float temp: temperature (K)
+    :param chain: do monte carlo on this chain
+    :type chain: :class:`hplattice.Chain.Chain`
+    """
 
     def __init__(self, config, temp, chain):
-        """Initialize the Monte Carlo object..."""
-        print '\tcreating Monty.py object....'
         # indices of hydrophic beads
         H_inds = [idx for idx, bead in enumerate(chain.hpstring) if bead == 'H']
         self.H_inds = array(H_inds, int32)
@@ -33,13 +39,26 @@ class Monty(object):
         self.lastenergy = self.energy(chain) + self.restraint.energy(chain)
 
     def kT(self):
+        """
+        :return: :math:`k_b * T`
+        :rtype: float
+        """
         return BOLTZ_CONST * self.temp
 
     def move1(self, chain, vecindex=None, direction=None):
-        """Apply moveset 'MC1' to the chain:
-           (i)  three-bead flips
-           (ii) end flips
-           REFERENCE: Dill and Chan, 1994, 1996.
+        """
+        Apply moveset MC1 (Dill and Chan, 1994, 1996) to the chain:
+        
+        1. three-bead flips
+        2. rigid rotations
+
+        :param chain: apply move to this chain
+        :type chain: :class:`hplattice.Chain.Chain`
+        :param int vecindex: optional, vector to move. will be chosen randomly
+                             if no value is specified.
+        :param int direction: optional, ``1`` for clockwise, ``-1`` for
+                              counterclockwise. will be chosen randomly if no
+                              value is specified.
         """
         if vecindex is None:
             r = random()
@@ -66,12 +85,23 @@ class Monty(object):
 
     def move2(self, chain, vecindex=None, direction=None, moveseed=None):
         """
-        Apply moveset MC2 to the chain:
-        (i)   three-bead flips
-        (ii)  end flips
-        (iii) crankshaft moves
-        (iv)  rigid rotations
-        REFERENCE:  Dill and Chan, 1994, 1996
+        Apply moveset MC2 (Dill and Chan, 1994, 1996) to the chain:
+        
+        1. three-bead flips
+        2. crankshaft moves
+        3. rigid rotations
+
+        :param chain: apply move to this chain
+        :type chain: :class:`hplattice.Chain.Chain`
+        :param int vecindex: optional, vector to move. will be chosen randomly
+                             if no value is specified.
+        :param int direction: optional, ``1`` for clockwise, ``-1`` for
+                              counterclockwise. will be chosen randomly if no
+                              value is specified.
+        :param float moveseed: optional, *moveseed* :math:`<1/3` for three-bead
+                             flip;  :math:`1/3<=` *moveseed* :math:`<2/3` for
+                             crankshaft; :math:`2/3<=` *moveseed* for rigid
+                             rotation.
         """
         if vecindex is None:
             r = random()
@@ -117,13 +147,17 @@ class Monty(object):
 
     def move3(self, chain, vecindex=None, direction=None):
         """
-        Apply moveset 'MC3' to the chain.
-        This is just a simple set to change the direction of
-        a single chain link.
-        Example:
-            [0,0,0,0,0] --> [0,0,1,0,0]
-        where {0,1,2,3}={n,e,s,w} direction
-        About 5% viable moves are expected.
+        Apply rigid rotations to the chain:
+
+        1. rigid rotations
+
+        :param chain: apply move to this chain
+        :type chain: :class:`hplattice.Chain.Chain`
+        :param int vecindex: optional, vector to move. will be chosen randomly
+                             if no value is specified.
+        :param int direction: optional, ``1`` for clockwise, ``-1`` for
+                              counterclockwise. will be chosen randomly if no
+                              value is specified.
         """
     
         if vecindex is None:
@@ -145,8 +179,13 @@ class Monty(object):
 
     def metropolis(self, replica):
         """
-        Accept Chain.nextvec over Chain.vec according to a Metropolis
-        criterion.
+        Judge the next conformation of the chain according to Metropolis
+        criterion: :math:`e^{-\Delta E/kT}`.
+
+        :param replica: The replica containing the chain that should be judged.
+        :type replica: :class:`hplattice.Replica.Replica`
+        :return: ``True`` if next conformation should be accepted.
+        :rtype: bool
         """
         randnum = random()
 
@@ -160,9 +199,9 @@ class Monty(object):
             replica.chain.update_chain()
             # update the lastenergy
             self.lastenergy = thisenergy
-            return 1
+            return True
         else:
-            return 0
+            return False
 
     def energy(self, chain):
         E, state = chain.energy(self.epsilon)
@@ -170,22 +209,38 @@ class Monty(object):
 
 
 class DistRestraint:
-    """ For now, this is a harmonic constraint over a squared distance D = d^2
-     where D = sum_{i,j} d^2_ij over all contacts."""
+    """
+    A harmonic constraint based on squared distance :math:`D = d^2`,
+    where :math:`D = \sum_{i,j} d^2_{ij}` over all contacts.
+
+    :param list contacts: list of tuples, example ``[(0, 4), (1, 6)]``
+    :param float kspring: spring constant for restraint
+    """
+
     def __init__(self, contacts, kspring):
-        """Initialize the DistRestraint object"""
-        # a list of tuples (start of chain is 0)
         self.contacts = contacts
-        # spring constant for restraint
-        # (J/[lattice space]^2)
-        self.kspring = kspring
+        self.kspring = kspring # (J/[lattice space]^2)
 
     def energy(self, chain):
-        """ return the energy of the distance restraint"""
+        """
+        Compute the restraint energy of a given chain.
+
+        :param chain: Compute the restraint energy of this chain.
+        :type chain: :class:`hplattice.Chain.Chain`
+        :return: energy of the distance restraint
+        :rtype: float
+        """
         return self.kspring * self.D(chain)
 
     def D(self, chain):
-        """Return the sum of squared-distances over the selected contacts."""
+        """
+        Compute the sum of squared-distances of a given chain.
+
+        :param chain: Compute the sum of squared-distances of this chain.
+        :type chain: :class:`hplattice.Chain.Chain`
+        :return: the sum of squared-distances over the selected contacts.
+        :rtype: float
+        """
         D = 0.0
         coords = chain.get_coord_array()
         for i in range(0, len(self.contacts)):

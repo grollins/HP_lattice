@@ -1,9 +1,23 @@
 def open_file_stream(filename):
+    """
+    Helper function to open a file for writing.
+
+    :param str filename: open this path for writing
+    """
     return open(filename, 'w')
 
 
 class Trajectory(object):
-    """docstring for Trajectory"""
+    """
+    *Trajectory* objects write chain coordinates to output streams. They used
+    to record the progress of an enumeration or monte carlo simulation.
+
+    :param bool save_trajectory: ``True`` if trajectory should be saved to
+                                 output stream.
+    :param str trajectory_filename: write trajectory to this path
+    :param open_stream_fcn: optional, call this function to open an output stream
+    :type open_stream_fcn: callable
+    """
     def __init__(self, save_trajectory, trajectory_filename,
                  open_stream_fcn=open_file_stream):
         self.save_trajectory = save_trajectory
@@ -15,6 +29,12 @@ class Trajectory(object):
         self.frame_num = 0
 
     def snapshot(self, chain):
+        """
+        Record coordinates of chain to output stream.
+
+        :param chain: Save coords of this chain.
+        :type chain: :class:`hplattice.Chain.Chain`
+        """
         if self.save_trajectory:
             # save chain coords in xyz format
             hp_string = chain.get_hp_string()
@@ -30,6 +50,9 @@ class Trajectory(object):
             pass
 
     def finalize(self):
+        """
+        Close any open output streams.
+        """
         if self.output_stream:
             self.output_stream.close()
         else:
