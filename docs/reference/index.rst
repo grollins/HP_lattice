@@ -10,6 +10,7 @@
 .. toctree::
     :maxdepth: 1
 
+    hplattice
     hplattice.Chain
     hplattice.Config
     hplattice.Enumerator
