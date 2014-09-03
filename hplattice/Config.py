@@ -2,12 +2,14 @@ from string import join, splitfields, joinfields
 
 
 class Config(object):
-    """A data structure to hold all the configuration data for an HP model
-       calculation."""
+    """
+    A data structure to hold all the configuration data for an HP model
+    calculation.
+
+    :param str filename: optional, path to configuration file
+    """
 
     def __init__(self, filename=None):
-        """Initialize the configuration data structure, and default values."""
-
         # DEFAULT VALUES
         # 11mer that zips, but with an implied contact
         self.HPSTRING = 'PHPPHPHPPHH'
@@ -71,14 +73,17 @@ class Config(object):
         else:
             self.filename = 'DEFAULT'
 
-    def read_configfile( self,filename ):
-        """Read in configuration parameters from file. The file should have
-           formatted rows consisting of two fields, separated by white-space
-           (or any non-printing characters, like tabs):
+    def read_configfile(self, filename):
+        """
+        Read in configuration parameters from file. The file should have
+        formatted rows consisting of two fields, separated by white-space
+        (or any non-printing characters, like tabs)::
 
             HPSTRING              PHPPHPPPHP 
-            INITIALVEC           [0,0,0,0,0,0,0,0,0,0]
+            INITIALVEC            [0,0,0,0,0,0,0,0,0,0]
             ....
+
+        :param str filename: path to configuration file
         """ 
 
         print '\n#--------------Reading non-default Config.py file...--------------#'
@@ -153,6 +158,9 @@ class Config(object):
         self.epsilon = self.eps * self.k * self.T
 
     def print_config(self):
+        """
+        Output the values of the configuration variables.
+        """
         print 'Configuration parameters from %s:' % self.filename
         print '%-30s %s' % ('HPSTRING', repr(self.HPSTRING))
         print '%-30s %s' % ('INITIALVEC', repr(self.INITIALVEC))
