@@ -1,5 +1,0 @@
-URD
-  HPPH 1
-  HHPH 1
-  HPHH 1
-  HHHH 1
