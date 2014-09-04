@@ -15,4 +15,6 @@ DataFiles: examples
 ExtraSourceFiles:
     LICENSE,
     README.md,
-    HP-sequences.tgz
+    HP-sequences.tgz,
+    lattice.vmdrc
+
