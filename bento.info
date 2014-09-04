@@ -4,11 +4,15 @@ Author: Geoff Rollins
 Summary: A toolkit for the two-dimensional HP lattice model of proteins of Chan and Dill
 
 Library:
-    Packages: hplattice, hplattice.util
+    Packages: hplattice, hplattice.util, hplattice.tests
 
 DataFiles: util
-    Files: hplattice/util/vec2coords.*, hplattice/util/viability.*, hplattice/util/energy.*
+    Files: hplattice/util/vec2coords.pyx, hplattice/util/viability.pyx, hplattice/util/energy.pyx, hplattice/util/setup.py
+
+DataFiles: examples
+    Files: examples/enumerate/enumerate.*, examples/mcrex/mcrex.*
 
 ExtraSourceFiles:
     LICENSE,
-    README.md
+    README.md,
+    HP-sequences.tgz
