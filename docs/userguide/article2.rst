@@ -1,15 +1,49 @@
 .. _article2:
 
-=============
- Article 2
-=============
+================
+ HP Simulations
+================
 
-In the works of Eco, a predominant concept is the concept of subdialectic reality. An abundance of appropriations concerning capitalist feminism exist. However, if socialist realism holds, we have to choose between the pretextual paradigm of context and dialectic narrative.
+Replica Exchange Monte Carlo
+============================
 
-The main theme of Hanfkopf’s[5] critique of textual deconstruction is the difference between society and culture. The subject is interpolated into a socialist realism that includes truth as a whole. Thus, Parry[6] implies that we have to choose between subtextual construction and cultural rationalism.
+The basic steps involved in running a monte carlo simulation are:
 
-The primary theme of the works of Eco is the paradigm, and some would say the dialectic, of postcapitalist class. However, the example of Marxist class prevalent in Eco’s The Aesthetics of Thomas Aquinas emerges again in The Island of the Day Before.
+1. Create a *LatticeFactory*.
+2. Use the *LatticeFactory* to load a *Configuration*.
+3. Create an *MCSampler*, passing the *LatticeFactory* and *Configuration* as
+   arguments.
+4. Call the ``do_mc_sampling`` method of the *MCSampler*.
 
-Sontag’s model of textual deconstruction states that the goal of the poet is social comment, given that culture is distinct from narrativity. Therefore, Marx suggests the use of socialist realism to deconstruct sexist perceptions of culture.
+.. code-block:: python
 
-The subject is contextualised into a textual deconstruction that includes language as a totality. In a sense, if socialist realism holds, we have to choose between textual deconstruction and dialectic capitalism.
+    from hplattice import LatticeFactory
+    from hplattice.MCSampler import MCSampler 
+
+    lattice_factory = LatticeFactory()
+    config = lattice_factory.make_configuration(filename='mcrex.conf')
+
+    mc = MCSampler(lattice_factory, config)
+    mc.do_mc_sampling(save_trajectory=True, trajectory_filename='traj.xyz')
+
+Conformational State Enumeration
+================================
+
+The basic steps involved in running an enumeration simulation are:
+
+1. Create a *LatticeFactory*.
+2. Use the *LatticeFactory* to load a *Configuration*.
+3. Create an *Enumerator*, passing the *LatticeFactory* and *Configuration* as
+   arguments.
+4. Call the ``enumerate_states`` method of the *Enumerator*.
+
+.. code-block:: python
+
+    from hplattice import LatticeFactory
+    from hplattice.Enumerator import Enumerator
+
+    lattice_factory = LatticeFactory()
+    config = lattice_factory.make_configuration(filename='enumerate.conf')
+
+    en = Enumerator(lattice_factory, config)
+    en.enumerate_states(save_trajectory=True, trajectory_filename='traj.xyz')

@@ -1,25 +1,90 @@
 .. _article1:
 
-=============
- Article 1
-=============
+===========================
+ Configuration File Format
+===========================
 
-The main theme of the works of Stone is the role of the artist as observer. The primary theme of Dahmus’s[1] model of neocultural narrative is a mythopoetical reality. However, socialist realism implies that truth serves to disempower the underprivileged.
+*hplattice* simulations require a configuration file. The file should have
+formatted rows consisting of two fields, separated by white-space (or any non-printing characters, like tabs)::
 
-In the works of Burroughs, a predominant concept is the distinction between closing and opening. Marx suggests the use of semantic discourse to attack the status quo. Therefore, if socialist realism holds, we have to choose between subtextual construction and the postcultural paradigm of context.
+    HPSTRING                PHPPHPHPPHH
+    INITIALVEC              [1, 0, 1, 2, 1, 2, 1, 2, 3, 3]
+    EPS                     -5.0
+    RESTRAINED_STATE        [(1, 4), (6, 9)]
+    KSPRING                 0.0
+    NREPLICAS               9
+    REPLICATEMPS            [275.0, 300.0, 325.0, 350.0, 400.0, 450.0, 500.0, 600.0,    1000.0]
+    MCSTEPS                 1000
+    SWAPEVERY               50
+    SWAPMETHOD              random pair
+    MOVESET                 MS2
+    PRINTEVERY              1
+    NATIVEDIR               ../../HP-sequences/sequences/clist/hp11
+    STOPATNATIVE            False
 
-“Sexual identity is fundamentally used in the service of sexism,” says Baudrillard; however, according to Parry[2] , it is not so much sexual identity that is fundamentally used in the service of sexism, but rather the rubicon of sexual identity. The subject is interpolated into a neocultural narrative that includes sexuality as a paradox. It could be said that Derrida promotes the use of modern subdeconstructivist theory to deconstruct and read class.
+Here is the full list of the parameters and what each one represents. If a
+parameter is not specified in the file, it will be set to a default value.
 
-If one examines subtextual construction, one is faced with a choice: either reject neocultural narrative or conclude that government is capable of significance, but only if the premise of subtextual construction is valid; if that is not the case, we can assume that reality is used to entrench outdated perceptions of society. Foucault uses the term ‘socialist realism’ to denote not narrative, as Sartre would have it, but neonarrative. But Sontag suggests the use of dialectic discourse to attack sexism.
+HPSTRING
+    The *HPSTRING* specifies the chemical nature of each monomer. The only
+    supported options are Hydrophobic (H) or Polar (P).
 
-Finnis[3] states that we have to choose between neocultural narrative and precapitalist theory. Therefore, socialist realism holds that class has intrinsic meaning.
+INITIALVEC
+    The *INITIALVEC* is a list of integers that specifies the direction of the
+    chain between two neighboring monomers: 0 (up), 1 (left), 2 (down) or 
+    3 (right). For example, ``[0,0,0,0]`` would correspond to a 5-mer that points straight up from the origin (in the positive-y direction).
 
-The subject is contextualised into a neocultural narrative that includes sexuality as a reality. But Bataille promotes the use of subtextual construction to challenge society.
+EPS
+    The energy of a hydrophobic contact (two H's in adjacent lattice spaces that
+    are not :math:`i+1` or :math:`i+2` neighbors along the chain).
 
-If Baudrillardist simulacra holds, we have to choose between socialist realism and conceptualist socialism. However, the subject is interpolated into a neocultural narrative that includes art as a totality.
+NREPLICAS
+    The number of replicas for replica exchange simulations. This is usually
+    set to ``1`` for enumeration simulations because those simulations do not
+    involve random moves in conformational space.
 
-Any number of discourses concerning a self-falsifying paradox may be revealed. Therefore, the premise of subtextual construction implies that culture is dead.
+REPLICATEMPS
+    A list of floats that specifies the temperature (K) of each replica. The 
+    length of the *REPLICATEMPS* list should be equal to *NREPLICAS*.
 
-The subject is contextualised into a subcultural paradigm of reality that includes truth as a reality. However, in Foucault’s Pendulum, Eco deconstructs neocultural narrative; in The Name of the Rose, although, he analyses Debordist image.
+MCSTEPS
+    The number of monte carlo steps to run. Each replica will run for this
+    number of steps, and they will periodically attempt to swap temperatures.
 
-The characteristic theme of the works of Eco is not theory, but posttheory. Thus, von Junz[4] suggests that we have to choose between socialist realism and precultural theory.
+SWAPEVERY
+    The number of steps between replica swap attempts.
+
+SWAPMETHOD
+    How to swap replicas. ``random pair`` to randomly choose two replicas
+    to swap; ``neighbors`` to randomly choose one replica ``i`` and swap it
+    with its ``i+1`` neighbor.
+
+MOVESET
+    Select which type of monte carlo moves will be used to sample conformational
+    space: ``MS1`` for three-bead flips and rigid rotations; ``MS2`` for
+    three-bead flips, crankshaft moves, and rigid rotations; and ``MS3`` for
+    rigid rotations only.
+
+RESTRAINED_STATE
+    A list of tuples that specifies contacts that should be harmonically
+    restrained. Each tuple in the list should contain a pair of integers that
+    correspond to the indices of the monomers that should be restrained. An
+    example would be ``[(1, 4), (6, 9)]`` which would add restraints to the
+    monomer1-monomer4 contact and the monomer6-monomer9 contact. Note that the
+    indices are 0-indexed, so monomer0 is the first monomer in the chain.
+
+KSPRING
+    The force constant of the harmonic restraints specified in *RESTRAINED_STATE*.
+
+PRINTEVERY
+    In a monte carlo simulation, save coordinates to trajectory after this
+    number of steps.
+
+NATIVEDIR
+    The path to the file that specifies what the native contacts are for the
+    chain specified by *HPSTRING*.
+
+STOPATNATIVE
+    If the monte carlo simulation finds the native conformation of the chain
+    (as defined by the contacts in *NATIVEDIR*), then halt the simulation if
+    *STOPATNATIVE* is ``True``.
