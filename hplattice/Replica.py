@@ -1,4 +1,3 @@
-from string import zfill
 from random import random
 from math import exp
 
@@ -22,8 +21,6 @@ class Replica(object):
         T = config.REPLICATEMPS[repnum]
         self.repnum = repnum
         self.nativeclist = nativeclist
-        self.repname = 'rep' + zfill( str(repnum), 2 )
-        self.repdir = config.DATADIR + self.repname
         self.chain = \
             lattice_factory.make_chain(config.HPSTRING, config.INITIALVEC)
         self.mc = lattice_factory.make_monty(config, T, self.chain)
@@ -83,8 +80,6 @@ class Replica(object):
             move_fcn = self.mc.move2
         elif move_name == 'MS3':
             move_fcn = self.mc.move3
-        elif move_name == 'MS4':
-            move_fcn = self.mc.move4
         else: 
             print 'MC MOVESET=', move_name, 'not supported!'
             move_fcn = None
@@ -168,7 +163,7 @@ def attemptswap(swap_method, replicas):
     """
     Attempt swap of replicas.
 
-    :param str swap_method: ``'random_pair'`` to randomly choose two replicas
+    :param str swap_method: ``'random pair'`` to randomly choose two replicas
                             to swap; ``'neighbors'`` to randomly choose one
                             replica ``i`` and swap it with its ``i+1`` neighbor.
     :param list replicas: list of :class:`Replica` objects

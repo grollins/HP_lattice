@@ -53,7 +53,7 @@ class Config(object):
         # Frequency (in MC steps) to write energy data to file
         self.ENEEVERY = 1000
         # 1 to stop the simulation as soon as the native is found, 0 if not.
-        self.STOPATNATIVE = 1
+        self.STOPATNATIVE = True
 
         # Trajectory data directory pathnames
         self.EXPDIR = './'
@@ -65,7 +65,7 @@ class Config(object):
         # located
         # each belonging to a foldable sequence, and containing the native
         # contact list 
-        self.NATIVEDIR = './sequences/clist/hp13'
+        self.NATIVEDIR = '../HP-sequences/sequences/clist/hp13'
         
         if filename != None:
             self.read_configfile( filename )
@@ -102,10 +102,7 @@ class Config(object):
                 if fields[0] == 'INITIALVEC':
                     self.INITIALVEC = eval(joinfields(fields[1:]))
         
-                if fields[0] == 'randseed':
-                    self.randseed = eval(fields[1])
-        
-                if fields[0] == 'eps':
+                if fields[0] == 'EPS':
                     self.eps = eval(fields[1])
         
                 if fields[0] == 'RESTRAINED_STATE':
@@ -164,8 +161,7 @@ class Config(object):
         print 'Configuration parameters from %s:' % self.filename
         print '%-30s %s' % ('HPSTRING', repr(self.HPSTRING))
         print '%-30s %s' % ('INITIALVEC', repr(self.INITIALVEC))
-        print '%-30s %s' % ('randseed', repr(self.randseed))
-        print '%-30s %s' % ('eps', repr(self.eps))
+        print '%-30s %s' % ('EPS', repr(self.eps))
         print '%-30s %s' % ('RESTRAINED_STATE', repr(self.RESTRAINED_STATE))
         print '%-30s %s' % ('KSPRING', repr(self.KSPRING))
         print '%-30s %s' % ('NREPLICAS', repr(self.NREPLICAS))

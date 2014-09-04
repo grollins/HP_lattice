@@ -12,10 +12,10 @@ class Chain(object):
     be either Hydrophobic (H) or Polar (P). By convention, the first monomer in
     the chain is fixed at the origin on a two-dimensional square lattice.
 
-    Adjacent monomers are connected by
-    bonds. The directionality of the bonds is stored in :class:`Vectors`,
-    and each bond-vector is stored as an integer: 0 (up), 1 (left), 2 (down) or
-    3 (right). A chain with :math:`N` monomers has :math:`N-1` vectors.
+    Adjacent monomers are connected by bonds. The directionality of the bonds is
+    stored in :class:`Vectors`, and each bond-vector is stored as an integer: 
+    0 (up), 1 (left), 2 (down) or 3 (right). A chain with :math:`N` monomers has
+    :math:`N-1` vectors.
     
     In addition to the vector representation of the chain, :class:`Chain` objects
     also store the 2D coordinates of each monomer. The set of coordinates is stored

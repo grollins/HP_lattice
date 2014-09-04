@@ -31,8 +31,6 @@ class Monty(object):
         self.tempfromrep = config.REPLICATEMPS.index(temp)
         # The energetic strength of a contact
         self.epsilon = config.epsilon
-        # Boltzmann's constant
-        # self.k = config.k
 
         # (both of these are copies from Config() )
         self.restraint = DistRestraint(config.RESTRAINED_STATE, config.KSPRING)
