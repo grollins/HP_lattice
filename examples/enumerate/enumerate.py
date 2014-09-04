@@ -29,7 +29,7 @@ def main():
             initial_vec = [0] * (N - 1)
             config = load_configuration(lattice_factory, this_hp_string,
                                         initial_vec)
-            en = Enumerator(config)
+            en = Enumerator(lattice_factory, config)
             en.enumerate_states(save_trajectory=True,
                                 trajectory_filename='%d_%s_traj.xyz' % \
                                 (N, this_hp_string))

@@ -20,7 +20,7 @@ class MCSampler(object):
         self.native_contacts = self._load_native_contacts()
         self.replicas = []
         for i in range(0, self.config.NREPLICAS):
-            r = lattice_factory.make_replica(self.config, i,
+            r = lattice_factory.make_replica(lattice_factory, self.config, i,
                                              self.native_contacts)
             self.replicas.append(r)
 
