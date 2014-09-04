@@ -15,11 +15,10 @@
 import sys
 import os
 
-# import mock
-# MOCK_MODULES = ['hplattice', 'simtk', 'simtk.openmm', 'simtk.openmm.app',
-#                 'simtk.unit', 'netCDF4', 'numpy', 'scipy']
-# for mod_name in MOCK_MODULES:
-#     sys.modules[mod_name] = mock.Mock()
+import mock
+MOCK_MODULES = ['hplattice', 'numpy', 'scipy']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
