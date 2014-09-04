@@ -2,7 +2,7 @@
 
 from os.path import join
 
-from hplattice.Config import Config
+from hplattice import LatticeFactory
 from hplattice.MCSampler import MCSampler
 
 
@@ -16,13 +16,12 @@ HP_STRING_SET = \
      # (20, ['PHHHPPHHHPPPPPHHPPHP', 'HHHHPPHHHHPHHPHPPHHH',
      # 'HHHPPPPHPPHPPPPHPPHP', 'HHHHPPHHPHHHHHPPHPHH'])
 )
-VERBOSE = False
 
 
-def load_configuration(hp_string, initial_vec, clist_dir):
+def load_configuration(lattice_factory, hp_string, initial_vec, clist_dir):
     # load in config file
     configfile = 'mcrex.conf'
-    config = Config( filename=configfile )
+    config = lattice_factory.make_configuration( filename=configfile )
     config.HPSTRING = hp_string
     config.INITIALVEC = initial_vec
     config.RESTRAINED_STATE = []
@@ -30,13 +29,14 @@ def load_configuration(hp_string, initial_vec, clist_dir):
     return config
 
 def main():
+    lattice_factory = LatticeFactory()
     for N, hp_string_list, clist_dir in HP_STRING_SET:
         for this_hp_string in hp_string_list:
             print N, this_hp_string, clist_dir
             initial_vec = [0] * (N - 1)
-            config = load_configuration(this_hp_string, initial_vec,
-                                        clist_dir)
-            s = MCSampler(config, VERBOSE)
+            config = load_configuration(lattice_factory, this_hp_string,
+                                        initial_vec, clist_dir)
+            s = MCSampler(lattice_factory, config)
             s.do_mc_sampling(save_trajectory=True,
                              trajectory_filename='%02d_traj.xyz' % N)
 
