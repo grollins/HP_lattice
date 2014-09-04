@@ -1,0 +1,226 @@
+# make sure, that the main menu is active
+menu main on
+# modify display settings
+display projection orthographic
+display depthcue off
+axes location off
+color Display Background white
+# define a new, very transparent material 'Glass'
+material add Glass
+material change ambient   Glass 0.00
+material change specular  Glass 0.50
+material change diffuse   Glass 0.65
+material change shininess Glass 0.53
+material change opacity   Glass 0.15
+# change the default representation
+after idle {
+    # create dummy molecule with one atom
+    set mol [mol new atoms 1]
+    set sel [atomselect $mol all]
+    # add items to color categories
+    $sel set name E
+    $sel set type E
+    $sel set name B
+    $sel set type B
+    $sel set type F
+    $sel set name F
+    # now we can define colors
+    color Name B pink
+    color Name C green
+    color Name F lime
+    color Type B pink
+    color Type C green
+    color Type F lime
+    # clean up
+    $sel delete
+    mol delete $mol
+}
+after idle { 
+# change default rep for already loaded molecules 
+  mol representation CPK 1.000000 0.300000 20.000000 20.000000
+  mol color Name
+  mol material Diffuse
+    set sel [atomselect top "name H"]
+    $sel set radius 1.0
+    $sel delete
+    set sel [atomselect top "name P"]
+    $sel set radius 1.0
+    $sel delete
+  foreach mid [molinfo list] { 
+    mol delrep 0 $mid 
+    mol addrep $mid 
+  }
+}
+proc vmdrestoremycolors {} {
+color scale colors RWB {1.0 0.0 0.0} {1.0 1.0 1.0} {0.0 0.0 1.0}
+color scale colors BWR {0.0 0.0 1.0} {1.0 1.0 1.0} {1.0 0.0 0.0}
+color scale colors RGryB {1.0 0.0 0.0} {0.5 0.5 0.5} {0.0 0.0 1.0}
+color scale colors BGryR {0.0 0.0 1.0} {0.5 0.5 0.5} {1.0 0.0 0.0}
+color scale colors RGB {1.0 0.0 0.0} {0.0 1.0 0.0} {0.0 0.0 1.0}
+color scale colors BGR {0.0 0.0 1.0} {0.0 1.0 0.0} {1.0 0.0 0.0}
+color scale colors RWG {1.0 0.0 0.0} {1.0 1.0 1.0} {0.0 1.0 0.0}
+color scale colors GWR {0.0 1.0 0.0} {1.0 1.0 1.0} {1.0 0.0 0.0}
+color scale colors GWB {0.0 1.0 0.0} {1.0 1.0 1.0} {0.0 0.0 1.0}
+color scale colors BWG {0.0 0.0 1.0} {1.0 1.0 1.0} {0.0 1.0 0.0}
+color scale colors BlkW {0.0 0.0 0.0} {0.5 0.5 0.5} {1.0 1.0 1.0}
+color scale colors WBlk {1.0 1.0 1.0} {0.5 0.5 0.5} {0.0 0.0 0.0}
+  color scale method RWB
+  set colorcmds {
+    {color Display {Background} white}
+    {color Display {BackgroundTop} black}
+    {color Display {BackgroundBot} blue2}
+    {color Display {FPS} white}
+    {color Name {C} green}
+    {color Name {H} green3}
+    {color Name {P} white}
+    {color Type {C} green}
+    {color Element {X} cyan}
+    {color Element {Ac} ochre}
+    {color Element {Ag} ochre}
+    {color Element {Al} ochre}
+    {color Element {Am} ochre}
+    {color Element {Ar} ochre}
+    {color Element {As} ochre}
+    {color Element {At} ochre}
+    {color Element {Au} ochre}
+    {color Element {B} ochre}
+    {color Element {Ba} ochre}
+    {color Element {Be} ochre}
+    {color Element {Bh} ochre}
+    {color Element {Bi} ochre}
+    {color Element {Bk} ochre}
+    {color Element {Br} ochre}
+    {color Element {Ca} ochre}
+    {color Element {Cd} ochre}
+    {color Element {Ce} ochre}
+    {color Element {Cf} ochre}
+    {color Element {Cl} ochre}
+    {color Element {Cm} ochre}
+    {color Element {Co} ochre}
+    {color Element {Cr} ochre}
+    {color Element {Cs} ochre}
+    {color Element {Cu} ochre}
+    {color Element {Db} ochre}
+    {color Element {Ds} ochre}
+    {color Element {Dy} ochre}
+    {color Element {Er} ochre}
+    {color Element {Es} ochre}
+    {color Element {Eu} ochre}
+    {color Element {F} ochre}
+    {color Element {Fe} ochre}
+    {color Element {Fm} ochre}
+    {color Element {Fr} ochre}
+    {color Element {Ga} ochre}
+    {color Element {Gd} ochre}
+    {color Element {Ge} ochre}
+    {color Element {He} ochre}
+    {color Element {Hf} ochre}
+    {color Element {Hg} ochre}
+    {color Element {Ho} ochre}
+    {color Element {Hs} ochre}
+    {color Element {I} ochre}
+    {color Element {In} ochre}
+    {color Element {Ir} ochre}
+    {color Element {K} ochre}
+    {color Element {Kr} ochre}
+    {color Element {La} ochre}
+    {color Element {Li} ochre}
+    {color Element {Lr} ochre}
+    {color Element {Lu} ochre}
+    {color Element {Md} ochre}
+    {color Element {Mg} ochre}
+    {color Element {Mn} ochre}
+    {color Element {Mo} ochre}
+    {color Element {Mt} ochre}
+    {color Element {Na} ochre}
+    {color Element {Nb} ochre}
+    {color Element {Nd} ochre}
+    {color Element {Ne} ochre}
+    {color Element {Ni} ochre}
+    {color Element {No} ochre}
+    {color Element {Np} ochre}
+    {color Element {Os} ochre}
+    {color Element {Pa} ochre}
+    {color Element {Pb} ochre}
+    {color Element {Pd} ochre}
+    {color Element {Pm} ochre}
+    {color Element {Po} ochre}
+    {color Element {Pr} ochre}
+    {color Element {Pt} ochre}
+    {color Element {Pu} ochre}
+    {color Element {Ra} ochre}
+    {color Element {Rb} ochre}
+    {color Element {Re} ochre}
+    {color Element {Rf} ochre}
+    {color Element {Rg} ochre}
+    {color Element {Rh} ochre}
+    {color Element {Rn} ochre}
+    {color Element {Ru} ochre}
+    {color Element {Sb} ochre}
+    {color Element {Sc} ochre}
+    {color Element {Se} ochre}
+    {color Element {Sg} ochre}
+    {color Element {Si} ochre}
+    {color Element {Sm} ochre}
+    {color Element {Sn} ochre}
+    {color Element {Sr} ochre}
+    {color Element {Ta} ochre}
+    {color Element {Tb} ochre}
+    {color Element {Tc} ochre}
+    {color Element {Te} ochre}
+    {color Element {Th} ochre}
+    {color Element {Ti} ochre}
+    {color Element {Tl} ochre}
+    {color Element {Tm} ochre}
+    {color Element {U} ochre}
+    {color Element {V} ochre}
+    {color Element {W} ochre}
+    {color Element {Xe} ochre}
+    {color Element {Y} ochre}
+    {color Element {Yb} ochre}
+    {color Element {Zr} ochre}
+    {color Chain {X} blue}
+    {color Segname {} blue}
+    {color Conformation {all} blue}
+    {color Molecule {0} blue}
+    {color Molecule {1} red}
+    {color Molecule {2} gray}
+    {color Molecule {3} orange}
+    {color Molecule {4} yellow}
+    {color Structure {Alpha Helix} 12}
+    {color Structure {3_10_Helix} 12}
+    {color Structure {Pi_Helix} 12}
+    {color Structure {Extended_Beta} 13}
+    {color Structure {Bridge_Beta} 13}
+    {color Structure {Turn} white}
+    {color Surface {Grasp} gray}
+    {color Labels {Springs} orange}
+    {color Stage {Even} gray}
+    {color Stage {Odd} silver}
+  }
+  foreach colcmd $colorcmds {
+    set val [catch {eval $colcmd}]
+  }
+  color change rgb  0 0.1 0.2 0.7 ;# blue
+  color change rgb  1 0.7 0.2 0.1 ;# red
+  color change rgb  3 0.7 0.4 0.0 ;# orange
+  color change rgb  4 0.8 0.7 0.1 ;# yellow
+  color change rgb  7 0.1 0.7 0.2 ;# green
+  color change rgb 10 0.1 0.7 0.8 ;# cyan
+  color change rgb 11 0.6 0.1 0.6 ;# purple
+  color change rgb 12 0.55 0.77 0.89 ;# alpha 
+  color change rgb 13 0.98 0.86 0.45 ;# beta
+}
+vmdrestoremycolors
+##END
+##END
+###MolSpace
+load /Applications/VMD 1.9.1.app/Contents/vmd/plugins/noarch/tcl/molspace/Routines/Other/sqlite/MacOs/libsqlite3.6.18.dylib
+lappend auto_path /Applications/VMD 1.9.1.app/Contents/vmd/plugins/noarch/tcl/molspace/
+lappend auto_path /Applications/VMD 1.9.1.app/Contents/vmd/plugins/noarch/tcl/molspace/Routines/Lib
+lappend auto_path /Applications/VMD 1.9.1.app/Contents/vmd/plugins/noarch/tcl/molspace/Routines/Other
+lappend auto_path /Applications/VMD 1.9.1.app/Contents/vmd/plugins/noarch/tcl/molspace/Routines/Other/graph
+variable MolSpacePath  /Applications/VMD 1.9.1.app/Contents/vmd/plugins/noarch/tcl/molspace
+vmd_install_extension MolSpace "MolSpace::MolSpace" "CompBioChem/Surface and Volume Calculator"
+menu main on
+##END
