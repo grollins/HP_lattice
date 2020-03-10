@@ -18,7 +18,7 @@ The easiest way to get started with HPlattice is to download and install the Ana
     ./bentomaker build
     ./bentomaker install
 
-3. `Download HPlattice <https://dl.dropboxusercontent.com/u/410211/hplattice-1.0.tar.gz>`_
+3. `Download HPlattice <https://www.dropbox.com/s/dzxqoe7ye1rb2kk/hplattice-1.0.tar.gz?dl=1>` (or from `GitHub <https://github.com/grollins/HP_lattice>`)
 4. Install HPlattice
 
 .. code-block:: bash
